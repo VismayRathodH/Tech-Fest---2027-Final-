@@ -1,0 +1,4 @@
+Project Rin Command
+
+
+$env:NODE_ENV='development'; cd 'D:\Courses (&) Achievements\Navodita Infotech\ERW\Event Registration Website\project'; node node_modules\vite\bin\vite.js

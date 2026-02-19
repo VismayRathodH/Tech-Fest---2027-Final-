@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-indigo-50 to-purple-50 min-h-screen text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-indigo-600 text-white px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-200/50 hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-300/50 transition-all duration-300 font-semibold focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:transform active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-white/70 backdrop-blur-md text-gray-700 px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 font-semibold border border-white/20 hover:bg-white/90 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 active:transform active:scale-95;
+  }
+
+  .card {
+    @apply bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-gray-200/50 p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-100/50 border border-white/40;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-white/50 backdrop-blur-sm text-sm;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce-subtle {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 3s ease-in-out infinite;
+}
+
+.page-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Step wizard */
+.step-circle {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300;
+}
+
+.step-circle.active {
+  @apply bg-indigo-600 text-white border-indigo-600;
+}
+
+.step-circle.completed {
+  @apply bg-green-500 text-white border-green-500;
+}
+
+.step-circle.inactive {
+  @apply bg-white text-gray-400 border-gray-300;
+}
+
+.step-line {
+  @apply flex-1 h-0.5 mx-1 bg-gray-300 transition-all duration-300;
+}
+
+.step-line.completed {
+  @apply bg-green-500;
+}
+
+/* Badge styles */
+.badge-solo {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.badge-duo {
+  @apply bg-purple-100 text-purple-700;
+}
+
+.badge-trio {
+  @apply bg-orange-100 text-orange-700;
+}
+
+.badge-quad {
+  @apply bg-pink-100 text-pink-700;
+}
+
+.badge-group {
+  @apply bg-emerald-100 text-emerald-700;
+}
