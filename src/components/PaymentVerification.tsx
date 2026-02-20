@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Search, CreditCard, Loader, CheckCircle } from 'lucide-react';
+import { X, Search, Loader, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface PaymentVerificationProps {
@@ -8,7 +8,6 @@ interface PaymentVerificationProps {
 
 export function PaymentVerification({ onClose }: PaymentVerificationProps) {
     const [registrationId, setRegistrationId] = useState('');
-    const [paymentId, setPaymentId] = useState('');
     const [loading, setLoading] = useState(false);
     const [searching, setSearching] = useState(false);
     const [registration, setRegistration] = useState<any>(null);
@@ -43,7 +42,7 @@ export function PaymentVerification({ onClose }: PaymentVerificationProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!registration || !paymentId.trim()) return;
+        if (!registration) return;
 
         setLoading(true);
         setError(null);
@@ -52,7 +51,6 @@ export function PaymentVerification({ onClose }: PaymentVerificationProps) {
             const { error: updateError } = await supabase
                 .from('registrations')
                 .update({
-                    payment_id: paymentId.trim(),
                     status: 'pending' // Ensure it's pending for admin review
                 })
                 .eq('id', registration.id);
@@ -149,32 +147,15 @@ export function PaymentVerification({ onClose }: PaymentVerificationProps) {
                                         </button>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Payment ID / Transaction ID *</label>
-                                        <div className="relative">
-                                            <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                            <input
-                                                type="text"
-                                                required
-                                                value={paymentId}
-                                                onChange={(e) => setPaymentId(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="Enter Transaction ID"
-                                            />
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            Paste the Transaction ID you received after successful payment.
-                                        </p>
-                                    </div>
-
+                                    {/* Transaction ID removed as per user request */}
                                     {error && <p className="text-sm text-red-600">{error}</p>}
 
                                     <button
                                         type="submit"
-                                        disabled={loading || !paymentId.trim()}
+                                        disabled={loading}
                                         className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-300 flex items-center justify-center"
                                     >
-                                        {loading ? <Loader className="animate-spin mr-2" size={18} /> : 'Submit Payment Details'}
+                                        {loading ? <Loader className="animate-spin mr-2" size={18} /> : 'Submit Confirmation'}
                                     </button>
                                 </form>
                             )}

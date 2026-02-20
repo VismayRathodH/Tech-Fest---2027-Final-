@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, Event, Department } from '../../lib/supabase';
-import { Plus, Edit, Trash2, X, Loader, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Loader } from 'lucide-react';
 
 export function EventManager() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -141,11 +141,10 @@ export function EventManager() {
                 <td className="px-4 py-3 text-gray-600">₹{evt.registration_fee || 0}</td>
                 <td className="px-4 py-3 text-gray-600">{evt.current_attendees}{evt.max_attendees ? ` / ${evt.max_attendees}` : ''}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
-                    evt.status === 'upcoming' ? 'bg-green-100 text-green-700' :
+                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${evt.status === 'upcoming' ? 'bg-green-100 text-green-700' :
                     evt.status === 'ongoing' ? 'bg-yellow-100 text-yellow-700' :
-                    evt.status === 'completed' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-700'
-                  }`}>{evt.status}</span>
+                      evt.status === 'completed' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-700'
+                    }`}>{evt.status}</span>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button onClick={() => openEdit(evt)} className="text-indigo-600 hover:text-indigo-800 mr-3"><Edit size={16} /></button>
@@ -159,19 +158,16 @@ export function EventManager() {
 
       {/* Form Modal — Full-screen slide-up panel */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center" onClick={() => setShowForm(false)}>
-          <div
-            className="bg-white w-full sm:max-w-4xl sm:mx-4 sm:rounded-2xl rounded-t-2xl max-h-[95vh] flex flex-col animate-fadeIn"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Sticky header */}
-            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0">
-              <h3 className="text-lg font-bold text-gray-900">{editing ? 'Edit Event' : 'Create Event'}</h3>
-              <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"><X size={20} /></button>
-            </div>
+        <div className="fixed inset-0 w-full h-[100vh] bg-white z-[9999] flex flex-col animate-fadeIn" style={{ height: '100vh' }} onClick={e => e.stopPropagation()}>
+          {/* Header */}
+          <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-white">
+            <h3 className="text-xl font-bold text-gray-900">{editing ? 'Edit Event' : 'Create Event'}</h3>
+            <button onClick={() => setShowForm(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"><X size={24} /></button>
+          </div>
 
-            {/* Scrollable body */}
-            <div className="flex-1 overflow-y-auto px-6 py-5">
+          {/* Form Content */}
+          <div className="flex-1 overflow-y-auto px-6 py-8">
+            <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="sm:col-span-2 lg:col-span-3">
                   <label className="form-label">Title *</label>
@@ -242,9 +238,8 @@ export function EventManager() {
                     { key: 'allow_quad', label: 'Quad' },
                     { key: 'allow_group', label: 'Group' },
                   ].map(({ key, label }) => (
-                    <label key={key} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
-                      (form as any)[key] ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                    }`}>
+                    <label key={key} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${(form as any)[key] ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}>
                       <input type="checkbox" checked={(form as any)[key]} onChange={e => setForm({ ...form, [key]: e.target.checked })} className="rounded text-indigo-600" />
                       <span className="text-sm font-medium">{label}</span>
                     </label>
@@ -271,16 +266,22 @@ export function EventManager() {
                 </div>
               </div>
 
-              {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
+              {error && (
+                <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4 animate-fadeIn">
+                  <p className="text-sm text-red-600 font-medium flex items-center">
+                    <span className="mr-2">⚠️</span> {error}
+                  </p>
+                </div>
+              )}
             </div>
+          </div>
 
-            {/* Sticky footer */}
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 flex-shrink-0 bg-gray-50 sm:rounded-b-2xl">
-              <button onClick={() => setShowForm(false)} className="btn-secondary text-sm">Cancel</button>
-              <button onClick={handleSave} disabled={saving} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors">
-                {saving ? 'Saving...' : 'Save Event'}
-              </button>
-            </div>
+          {/* Footer */}
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+            <button onClick={() => setShowForm(false)} className="btn-secondary text-base">Cancel</button>
+            <button onClick={handleSave} disabled={saving} className="btn-primary">
+              {saving ? 'Saving...' : editing ? 'Update Event' : 'Save Event'}
+            </button>
           </div>
         </div>
       )}

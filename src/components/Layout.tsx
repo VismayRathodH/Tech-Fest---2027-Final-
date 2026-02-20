@@ -161,9 +161,9 @@ export function Layout() {
         <Outlet />
       </main>
 
-      <footer className="bg-white/80 backdrop-blur-md text-gray-600 py-12 border border-gray-100 shadow-lg flex-shrink-0 m-10 rounded-[2rem]">
+      <footer className="bg-white/80 backdrop-blur-md text-gray-600 py-2 border border-gray-100 shadow-lg flex-shrink-0 m rounded-[2rem] m-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
-          <div className="w-full flex flex-col items-center gap-10 mb-10">
+          <div className="w-full flex flex-col items-center gap-6 mb-6">
             {/* College Info */}
             <div className="space-y-4 flex flex-col items-center">
               <div className="flex items-center space-x-3">
@@ -187,7 +187,7 @@ export function Layout() {
               </div>
             </div>
 
-            <div className="text-sm text-gray-600 border-y border-gray-100 py-6 w-full max-w-lg">
+            <div className="text-sm text-gray-600 border-y border-gray-100 py-4 w-full max-w-lg">
               <p className="font-medium">Developed and designed by</p>
               <p className="text-indigo-600 font-bold text-base mt-1">Vismay Rathod & Manav Vadhavana</p>
               <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider">Computer Engineering Department</p>

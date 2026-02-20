@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, User, Mail, Phone, CreditCard, Upload,
+  ArrowLeft, ArrowRight, User, Mail, Phone, Upload,
   Loader, CheckCircle, Calendar, MapPin, Clock, Users, IndianRupee, Hash, Copy, Check, Search
 } from 'lucide-react';
 import { supabase, Event, Department } from '../lib/supabase';
@@ -34,7 +34,6 @@ export function RegisterPage() {
   const [groupSize, setGroupSize] = useState(2);
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string>('');
-  const [transactionRef, setTransactionRef] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [registrationId, setRegistrationId] = useState('');
@@ -146,7 +145,6 @@ export function RegisterPage() {
     if (s === 3) {
       if (event && event.registration_fee > 0) {
         if (!screenshot) errs.screenshot = 'Payment screenshot is required';
-        if (!transactionRef.trim()) errs.transactionRef = 'Transaction reference is required';
       }
     }
 
@@ -221,8 +219,8 @@ export function RegisterPage() {
         team_members: participants.slice(1).map(p => p.name),
         team_name: teamName || null,
         payment_screenshot_url: screenshotPath,
-        transaction_reference: transactionRef || null,
-        payment_id: transactionRef || null,
+        transaction_reference: null,
+        payment_id: null,
         status: 'pending',
       });
       if (insertErr) throw insertErr;
@@ -284,15 +282,9 @@ export function RegisterPage() {
   const availableTypes = getAvailableTypes(event);
 
   // Step indicator
-  const totalSteps = event.registration_fee > 0 ? 5 : 4;
   const stepLabels = event.registration_fee > 0
     ? ['Type', 'Details', 'Payment', 'Review', 'Done']
     : ['Type', 'Details', 'Review', 'Done'];
-
-  const currentStepLabel = (s: number) => {
-    if (event.registration_fee <= 0 && s >= 3) return s + 1; // skip payment display
-    return s;
-  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 animate-fadeIn">
@@ -309,20 +301,17 @@ export function RegisterPage() {
           <div className="flex items-center justify-between">
             {stepLabels.map((label, idx) => (
               <div key={label} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  idx + 1 <= step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${idx + 1 <= step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'
+                  }`}>
                   {idx + 1 <= step ? (idx + 1 < step ? '✓' : idx + 1) : idx + 1}
                 </div>
-                <span className={`ml-2 text-xs font-medium hidden sm:inline ${
-                  idx + 1 <= step ? 'text-indigo-600' : 'text-gray-400'
-                }`}>
+                <span className={`ml-2 text-xs font-medium hidden sm:inline ${idx + 1 <= step ? 'text-indigo-600' : 'text-gray-400'
+                  }`}>
                   {label}
                 </span>
                 {idx < stepLabels.length - 1 && (
-                  <div className={`w-8 sm:w-16 h-0.5 mx-2 ${
-                    idx + 1 < step ? 'bg-indigo-600' : 'bg-gray-200'
-                  }`} />
+                  <div className={`w-8 sm:w-16 h-0.5 mx-2 ${idx + 1 < step ? 'bg-indigo-600' : 'bg-gray-200'
+                    }`} />
                 )}
               </div>
             ))}
@@ -361,11 +350,10 @@ export function RegisterPage() {
                   <button
                     key={type}
                     onClick={() => setRegType(type)}
-                    className={`p-4 rounded-xl border-2 text-center transition-all ${
-                      regType === type
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-200 hover:border-indigo-300 text-gray-700'
-                    }`}
+                    className={`p-4 rounded-xl border-2 text-center transition-all ${regType === type
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                      : 'border-gray-200 hover:border-indigo-300 text-gray-700'
+                      }`}
                   >
                     <span className="block text-2xl mb-1">
                       {type === 'solo' ? '👤' : type === 'duo' ? '👥' : type === 'trio' ? '👨‍👩‍👦' : type === 'quad' ? '👨‍👩‍👧‍👦' : '🏟️'}
@@ -551,23 +539,7 @@ export function RegisterPage() {
                 </div>
               )}
 
-              {/* Transaction Reference */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  UPI Transaction ID / Reference No *
-                </label>
-                <div className="relative">
-                  <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                  <input
-                    type="text"
-                    value={transactionRef}
-                    onChange={e => setTransactionRef(e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${errors.transactionRef ? 'border-red-400' : 'border-gray-300'}`}
-                    placeholder="Enter transaction ID"
-                  />
-                </div>
-                {errors.transactionRef && <p className="text-red-600 text-xs mt-1">{errors.transactionRef}</p>}
-              </div>
+              {/* Transaction Reference removed as per user request */}
 
               {/* Screenshot Upload */}
               <div className="mb-4">
@@ -576,9 +548,8 @@ export function RegisterPage() {
                 </label>
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                    errors.screenshot ? 'border-red-400 bg-red-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50'
-                  }`}
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${errors.screenshot ? 'border-red-400 bg-red-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50'
+                    }`}
                 >
                   {screenshotPreview ? (
                     <div>
@@ -636,7 +607,6 @@ export function RegisterPage() {
                   <div className="p-4 bg-gray-50 rounded-xl">
                     <h4 className="text-sm font-bold text-gray-500 uppercase mb-2">Payment</h4>
                     <p className="text-sm text-gray-900">Amount: ₹{getTotalFee()}{getMemberCount(regType) > 1 ? ` (₹${event.registration_fee} × ${getMemberCount(regType)})` : ''}</p>
-                    <p className="text-sm text-gray-600">Transaction Ref: {transactionRef || 'N/A'}</p>
                     <p className="text-sm text-gray-600">
                       Screenshot: {screenshot ? `✓ ${screenshot.name}` : 'Not uploaded'}
                     </p>

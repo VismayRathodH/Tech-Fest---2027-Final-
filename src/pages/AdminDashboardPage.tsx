@@ -131,133 +131,134 @@ export function AdminDashboardPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fadeIn">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 text-sm">Manage your college event system</p>
-      </div>
-
-      {/* Tab navigation */}
-      <div className="flex flex-wrap gap-1 mb-6 bg-gray-100 p-1 rounded-xl">
-        {tabs.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-              tab === key ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <Icon size={16} className="mr-1.5" />
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      {tab === 'overview' && (
-        <div>
-          {loading ? (
-            <div className="text-center py-12"><Loader className="animate-spin text-indigo-600 mx-auto" size={32} /></div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <StatCard label="Departments" value={stats.departments} icon={Building2} color="bg-purple-500" />
-                <StatCard label="Events" value={stats.events} icon={Calendar} color="bg-blue-500" />
-                <StatCard label="Coordinators" value={stats.coordinators} icon={Users} color="bg-emerald-500" />
-                <StatCard label="Registrations" value={stats.registrations} icon={ClipboardList} color="bg-orange-500" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="card text-center">
-                  <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
-                  <p className="text-sm text-gray-500 mt-1">Pending Review</p>
-                </div>
-                <div className="card text-center">
-                  <p className="text-3xl font-bold text-green-600">{stats.approved}</p>
-                  <p className="text-sm text-gray-500 mt-1">Approved</p>
-                </div>
-                <div className="card text-center">
-                  <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
-                  <p className="text-sm text-gray-500 mt-1">Rejected</p>
-                </div>
-              </div>
-
-              {/* Department-wise Payment Breakdown */}
-              <div className="mt-8">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <IndianRupee size={20} className="mr-2 text-green-600" />
-                  Payment Summary — Department Wise
-                </h3>
-                <div className="card p-0 overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="text-left px-5 py-3 font-semibold text-gray-600">Department</th>
-                        <th className="text-center px-5 py-3 font-semibold text-gray-600">Registrations</th>
-                        <th className="text-right px-5 py-3 font-semibold text-gray-600">Total Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {deptPayments.length === 0 ? (
-                        <tr><td colSpan={3} className="text-center py-8 text-gray-400">No registrations yet</td></tr>
-                      ) : (
-                        deptPayments.map(dp => (
-                          <tr key={dp.code} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                            <td className="px-5 py-3">
-                              <span className="font-medium text-gray-900">{dp.name}</span>
-                              <span className="ml-2 text-xs text-gray-400">({dp.code})</span>
-                            </td>
-                            <td className="text-center px-5 py-3 text-gray-600">{dp.regCount}</td>
-                            <td className="text-right px-5 py-3 font-bold text-gray-900">₹{dp.totalAmount.toLocaleString()}</td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                    {deptPayments.length > 0 && (
-                      <tfoot>
-                        <tr className="bg-indigo-50 border-t-2 border-indigo-200">
-                          <td className="px-5 py-3 font-bold text-indigo-700">Grand Total</td>
-                          <td className="text-center px-5 py-3 font-bold text-indigo-600">{deptPayments.reduce((s, d) => s + d.regCount, 0)}</td>
-                          <td className="text-right px-5 py-3 font-extrabold text-indigo-700 text-base">₹{grandTotal.toLocaleString()}</td>
-                        </tr>
-                      </tfoot>
-                    )}
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fadeIn">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-gray-500 text-sm">Manage your college event system</p>
         </div>
-      )}
 
-      {tab === 'departments' && <DepartmentManager />}
-      {tab === 'events' && <EventManager />}
-      {tab === 'coordinators' && <CoordinatorManager />}
-      {tab === 'registrations' && <RegistrationMonitor />}
+        {/* Tab navigation */}
+        <div className="flex flex-wrap gap-1 mb-6 bg-gray-100 p-1 rounded-xl">
+          {tabs.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all ${tab === key ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                }`}
+            >
+              <Icon size={16} className="mr-1.5" />
+              {label}
+            </button>
+          ))}
+        </div>
 
-      {tab === 'settings' && (
-        <div className="max-w-md">
-          <div className="card">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-              <Key size={18} className="mr-2" /> Change Password
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Min 6 characters" />
+        {/* Tab content */}
+        {tab === 'overview' && (
+          <div>
+            {loading ? (
+              <div className="text-center py-12"><Loader className="animate-spin text-indigo-600 mx-auto" size={32} /></div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <StatCard label="Departments" value={stats.departments} icon={Building2} color="bg-purple-500" />
+                  <StatCard label="Events" value={stats.events} icon={Calendar} color="bg-blue-500" />
+                  <StatCard label="Coordinators" value={stats.coordinators} icon={Users} color="bg-emerald-500" />
+                  <StatCard label="Registrations" value={stats.registrations} icon={ClipboardList} color="bg-orange-500" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="card text-center">
+                    <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
+                    <p className="text-sm text-gray-500 mt-1">Pending Review</p>
+                  </div>
+                  <div className="card text-center">
+                    <p className="text-3xl font-bold text-green-600">{stats.approved}</p>
+                    <p className="text-sm text-gray-500 mt-1">Approved</p>
+                  </div>
+                  <div className="card text-center">
+                    <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
+                    <p className="text-sm text-gray-500 mt-1">Rejected</p>
+                  </div>
+                </div>
+
+                {/* Department-wise Payment Breakdown */}
+                <div className="mt-8">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <IndianRupee size={20} className="mr-2 text-green-600" />
+                    Payment Summary — Department Wise
+                  </h3>
+                  <div className="card p-0 overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          <th className="text-left px-5 py-3 font-semibold text-gray-600">Department</th>
+                          <th className="text-center px-5 py-3 font-semibold text-gray-600">Registrations</th>
+                          <th className="text-right px-5 py-3 font-semibold text-gray-600">Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {deptPayments.length === 0 ? (
+                          <tr><td colSpan={3} className="text-center py-8 text-gray-400">No registrations yet</td></tr>
+                        ) : (
+                          deptPayments.map(dp => (
+                            <tr key={dp.code} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                              <td className="px-5 py-3">
+                                <span className="font-medium text-gray-900">{dp.name}</span>
+                                <span className="ml-2 text-xs text-gray-400">({dp.code})</span>
+                              </td>
+                              <td className="text-center px-5 py-3 text-gray-600">{dp.regCount}</td>
+                              <td className="text-right px-5 py-3 font-bold text-gray-900">₹{dp.totalAmount.toLocaleString()}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                      {deptPayments.length > 0 && (
+                        <tfoot>
+                          <tr className="bg-indigo-50 border-t-2 border-indigo-200">
+                            <td className="px-5 py-3 font-bold text-indigo-700">Grand Total</td>
+                            <td className="text-center px-5 py-3 font-bold text-indigo-600">{deptPayments.reduce((s, d) => s + d.regCount, 0)}</td>
+                            <td className="text-right px-5 py-3 font-extrabold text-indigo-700 text-base">₹{grandTotal.toLocaleString()}</td>
+                          </tr>
+                        </tfoot>
+                      )}
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {tab === 'departments' && <DepartmentManager />}
+        {tab === 'events' && <EventManager />}
+        {tab === 'coordinators' && <CoordinatorManager />}
+        {tab === 'registrations' && <RegistrationMonitor />}
+
+        {tab === 'settings' && (
+          <div className="max-w-md">
+            <div className="card">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <Key size={18} className="mr-2" /> Change Password
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Min 6 characters" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                  <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                </div>
+                {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
+                {passwordSuccess && <p className="text-sm text-green-600">{passwordSuccess}</p>}
+                <button onClick={handleChangePassword} disabled={passwordLoading} className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-indigo-300">
+                  {passwordLoading ? 'Updating...' : 'Update Password'}
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-              </div>
-              {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
-              {passwordSuccess && <p className="text-sm text-green-600">{passwordSuccess}</p>}
-              <button onClick={handleChangePassword} disabled={passwordLoading} className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-indigo-300">
-                {passwordLoading ? 'Updating...' : 'Update Password'}
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

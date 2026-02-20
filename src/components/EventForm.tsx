@@ -116,22 +116,22 @@ export function EventForm({ event, onClose, onSuccess }: EventFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg max-w-2xl w-full my-8">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-lg">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {event ? 'Edit Event' : 'Create New Event'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={24} />
-          </button>
-        </div>
+    <div className="fixed inset-0 w-full h-[100vh] bg-white z-[9999] flex flex-col animate-fadeIn" style={{ height: '100vh' }} onClick={e => e.stopPropagation()}>
+      <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm flex-shrink-0">
+        <h2 className="text-2xl font-bold text-gray-900">
+          {event ? 'Edit Event' : 'Create New Event'}
+        </h2>
+        <button
+          onClick={onClose}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X size={24} />
+        </button>
+      </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex-1 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="max-w-6xl mx-auto p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Event Title *
@@ -147,7 +147,22 @@ export function EventForm({ event, onClose, onSuccess }: EventFormProps) {
               {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
             </div>
 
-            <div className="md:col-span-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category *
+              </label>
+              <input
+                type="text"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.category ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                placeholder="Conference, Workshop, Seminar..."
+              />
+              {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
+            </div>
+
+            <div className="md:col-span-3">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
               </label>
@@ -205,21 +220,6 @@ export function EventForm({ event, onClose, onSuccess }: EventFormProps) {
               {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
-              <input
-                type="text"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.category ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                placeholder="Conference, Workshop, Seminar..."
-              />
-              {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
-            </div>
-
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Image URL (Optional)
@@ -267,7 +267,7 @@ export function EventForm({ event, onClose, onSuccess }: EventFormProps) {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Allowed Registration Types
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -314,22 +314,22 @@ export function EventForm({ event, onClose, onSuccess }: EventFormProps) {
             </div>
           )}
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-4 pt-6 border-t border-gray-100 pb-8">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="btn-secondary flex-1"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center justify-center"
+              className="btn-primary flex-1 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
-                  <Loader className="animate-spin mr-2" size={18} />
+                  <Loader className="animate-spin" size={20} />
                   Saving...
                 </>
               ) : (
