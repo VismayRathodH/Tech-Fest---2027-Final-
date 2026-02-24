@@ -106,6 +106,14 @@ export interface CoordinatorAssignment {
   events?: Event;
 }
 
+// ─── IST Member ──────────────────────────────────────────────
+export interface ISTMember {
+  id: string;
+  enrollment_number: string;
+  student_name: string;
+  added_at: string;
+}
+
 // ─── Audit Log ───────────────────────────────────────────────
 export interface AuditLog {
   id: string;

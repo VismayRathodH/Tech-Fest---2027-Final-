@@ -1,10 +1,13 @@
+// src\pages\RegisterPage.tsx
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, User, Mail, Phone, Upload,
+  ArrowLeft, ArrowRight, User, Mail, Phone, CreditCard, Upload,
   Loader, CheckCircle, Calendar, MapPin, Clock, Users, IndianRupee, Hash, Copy, Check, Search
 } from 'lucide-react';
 import { supabase, Event, Department } from '../lib/supabase';
+
+const IST_DISCOUNT_PER_MEMBER = 20;
 
 interface ParticipantForm {
   name: string;
@@ -34,11 +37,16 @@ export function RegisterPage() {
   const [groupSize, setGroupSize] = useState(2);
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string>('');
+  const [transactionRef, setTransactionRef] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [registrationId, setRegistrationId] = useState('');
   const [copied, setCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // IST discount state
+  const [istMembers, setIstMembers] = useState<Set<string>>(new Set());
+  const [istChecked, setIstChecked] = useState(false);
 
   useEffect(() => {
     if (eventId) fetchEvent(eventId);
@@ -99,6 +107,37 @@ export function RegisterPage() {
     return event.registration_fee * getMemberCount(regType);
   };
 
+  const getISTMemberCount = (): number => {
+    if (!istChecked) return 0;
+    return participants.filter(p => istMembers.has(p.college_id.trim().toUpperCase())).length;
+  };
+
+  const getISTDiscount = (): number => {
+    return getISTMemberCount() * IST_DISCOUNT_PER_MEMBER;
+  };
+
+  const getFinalFee = (): number => {
+    const total = getTotalFee();
+    const discount = getISTDiscount();
+    return Math.max(0, total - discount);
+  };
+
+  const checkISTMembership = async () => {
+    const collegeIds = participants.map(p => p.college_id.trim().toUpperCase()).filter(Boolean);
+    if (collegeIds.length === 0) { setIstChecked(true); return; }
+    try {
+      const { data } = await supabase
+        .from('ist_members')
+        .select('enrollment_number')
+        .in('enrollment_number', collegeIds);
+      const set = new Set((data || []).map(d => d.enrollment_number.toUpperCase()));
+      setIstMembers(set);
+    } catch {
+      setIstMembers(new Set());
+    }
+    setIstChecked(true);
+  };
+
   // When regType or groupSize changes, adjust participants array
   useEffect(() => {
     if (!regType) return;
@@ -145,6 +184,7 @@ export function RegisterPage() {
     if (s === 3) {
       if (event && event.registration_fee > 0) {
         if (!screenshot) errs.screenshot = 'Payment screenshot is required';
+        if (!transactionRef.trim()) errs.transactionRef = 'Transaction reference is required';
       }
     }
 
@@ -154,6 +194,10 @@ export function RegisterPage() {
 
   const nextStep = () => {
     if (validateStep(step)) {
+      // Check IST membership when leaving step 2
+      if (step === 2) {
+        checkISTMembership();
+      }
       // Skip payment step if fee is 0
       if (step === 2 && event && event.registration_fee <= 0) {
         setStep(4);
@@ -219,8 +263,8 @@ export function RegisterPage() {
         team_members: participants.slice(1).map(p => p.name),
         team_name: teamName || null,
         payment_screenshot_url: screenshotPath,
-        transaction_reference: null,
-        payment_id: null,
+        transaction_reference: transactionRef || null,
+        payment_id: transactionRef || null,
         status: 'pending',
       });
       if (insertErr) throw insertErr;
@@ -282,9 +326,15 @@ export function RegisterPage() {
   const availableTypes = getAvailableTypes(event);
 
   // Step indicator
+  const totalSteps = event.registration_fee > 0 ? 5 : 4;
   const stepLabels = event.registration_fee > 0
     ? ['Type', 'Details', 'Payment', 'Review', 'Done']
     : ['Type', 'Details', 'Review', 'Done'];
+
+  const currentStepLabel = (s: number) => {
+    if (event.registration_fee <= 0 && s >= 3) return s + 1; // skip payment display
+    return s;
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 animate-fadeIn">
@@ -301,17 +351,20 @@ export function RegisterPage() {
           <div className="flex items-center justify-between">
             {stepLabels.map((label, idx) => (
               <div key={label} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${idx + 1 <= step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'
-                  }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  idx + 1 <= step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'
+                }`}>
                   {idx + 1 <= step ? (idx + 1 < step ? '✓' : idx + 1) : idx + 1}
                 </div>
-                <span className={`ml-2 text-xs font-medium hidden sm:inline ${idx + 1 <= step ? 'text-indigo-600' : 'text-gray-400'
-                  }`}>
+                <span className={`ml-2 text-xs font-medium hidden sm:inline ${
+                  idx + 1 <= step ? 'text-indigo-600' : 'text-gray-400'
+                }`}>
                   {label}
                 </span>
                 {idx < stepLabels.length - 1 && (
-                  <div className={`w-8 sm:w-16 h-0.5 mx-2 ${idx + 1 < step ? 'bg-indigo-600' : 'bg-gray-200'
-                    }`} />
+                  <div className={`w-8 sm:w-16 h-0.5 mx-2 ${
+                    idx + 1 < step ? 'bg-indigo-600' : 'bg-gray-200'
+                  }`} />
                 )}
               </div>
             ))}
@@ -328,7 +381,7 @@ export function RegisterPage() {
             <span className="flex items-center"><Calendar size={14} className="mr-1" />{new Date(event.event_date).toLocaleDateString()}</span>
             <span className="flex items-center"><Clock size={14} className="mr-1" />{event.event_time}</span>
             <span className="flex items-center"><MapPin size={14} className="mr-1" />{event.location}</span>
-            {event.registration_fee > 0 && <span className="flex items-center"><IndianRupee size={14} className="mr-1" />₹{event.registration_fee}/person{regType && regType !== 'solo' ? ` (₹${getTotalFee()} total)` : ''}</span>}
+            {event.registration_fee > 0 && <span className="flex items-center"><IndianRupee size={14} className="mr-1" />₹{event.registration_fee}/person{regType && regType !== 'solo' ? ` (₹${getTotalFee()} total)` : ''}{istChecked && getISTDiscount() > 0 ? ` — IST discount: -₹${getISTDiscount()}` : ''}</span>}
           </div>
         </div>
       )}
@@ -350,10 +403,11 @@ export function RegisterPage() {
                   <button
                     key={type}
                     onClick={() => setRegType(type)}
-                    className={`p-4 rounded-xl border-2 text-center transition-all ${regType === type
-                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                      : 'border-gray-200 hover:border-indigo-300 text-gray-700'
-                      }`}
+                    className={`p-4 rounded-xl border-2 text-center transition-all ${
+                      regType === type
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                        : 'border-gray-200 hover:border-indigo-300 text-gray-700'
+                    }`}
                   >
                     <span className="block text-2xl mb-1">
                       {type === 'solo' ? '👤' : type === 'duo' ? '👥' : type === 'trio' ? '👨‍👩‍👦' : type === 'quad' ? '👨‍👩‍👧‍👦' : '🏟️'}
@@ -509,7 +563,17 @@ export function RegisterPage() {
 
               <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 mb-6 text-center">
                 <p className="text-sm text-indigo-600 font-medium mb-1">Amount to Pay</p>
-                <p className="text-3xl font-extrabold text-indigo-700">₹{getTotalFee()}</p>
+                {getISTDiscount() > 0 ? (
+                  <>
+                    <p className="text-lg text-gray-400 line-through">₹{getTotalFee()}</p>
+                    <p className="text-3xl font-extrabold text-indigo-700">₹{getFinalFee()}</p>
+                    <p className="text-xs text-green-600 mt-1 font-medium">
+                      🎉 IST Member Discount: -₹{getISTDiscount()} ({getISTMemberCount()} IST member{getISTMemberCount() > 1 ? 's' : ''} × ₹{IST_DISCOUNT_PER_MEMBER})
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-3xl font-extrabold text-indigo-700">₹{getTotalFee()}</p>
+                )}
                 {getMemberCount(regType) > 1 && (
                   <p className="text-xs text-indigo-500 mt-1">₹{event.registration_fee} × {getMemberCount(regType)} members</p>
                 )}
@@ -539,7 +603,23 @@ export function RegisterPage() {
                 </div>
               )}
 
-              {/* Transaction Reference removed as per user request */}
+              {/* Transaction Reference */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  UPI Transaction ID / Reference No *
+                </label>
+                <div className="relative">
+                  <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <input
+                    type="text"
+                    value={transactionRef}
+                    onChange={e => setTransactionRef(e.target.value)}
+                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${errors.transactionRef ? 'border-red-400' : 'border-gray-300'}`}
+                    placeholder="Enter transaction ID"
+                  />
+                </div>
+                {errors.transactionRef && <p className="text-red-600 text-xs mt-1">{errors.transactionRef}</p>}
+              </div>
 
               {/* Screenshot Upload */}
               <div className="mb-4">
@@ -548,8 +628,9 @@ export function RegisterPage() {
                 </label>
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${errors.screenshot ? 'border-red-400 bg-red-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50'
-                    }`}
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
+                    errors.screenshot ? 'border-red-400 bg-red-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50'
+                  }`}
                 >
                   {screenshotPreview ? (
                     <div>
@@ -595,18 +676,31 @@ export function RegisterPage() {
 
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <h4 className="text-sm font-bold text-gray-500 uppercase mb-2">Participants</h4>
-                  {participants.map((p, i) => (
-                    <div key={i} className="mb-2 last:mb-0">
-                      <p className="text-sm font-medium text-gray-900">{i + 1}. {p.name}</p>
-                      <p className="text-xs text-gray-500">{p.email} • {p.phone} • {p.college_id}</p>
-                    </div>
-                  ))}
+                  {participants.map((p, i) => {
+                    const isIST = istChecked && istMembers.has(p.college_id.trim().toUpperCase());
+                    return (
+                      <div key={i} className="mb-2 last:mb-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          {i + 1}. {p.name}
+                          {isIST && <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold bg-green-100 text-green-700 rounded-full">IST Member</span>}
+                        </p>
+                        <p className="text-xs text-gray-500">{p.email} • {p.phone} • {p.college_id}</p>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {event.registration_fee > 0 && (
                   <div className="p-4 bg-gray-50 rounded-xl">
                     <h4 className="text-sm font-bold text-gray-500 uppercase mb-2">Payment</h4>
-                    <p className="text-sm text-gray-900">Amount: ₹{getTotalFee()}{getMemberCount(regType) > 1 ? ` (₹${event.registration_fee} × ${getMemberCount(regType)})` : ''}</p>
+                    <p className="text-sm text-gray-900">Amount: ₹{event.registration_fee} × {getMemberCount(regType)} = ₹{getTotalFee()}</p>
+                    {getISTDiscount() > 0 && (
+                      <>
+                        <p className="text-sm text-green-700 font-medium">IST Discount: -₹{getISTDiscount()} ({getISTMemberCount()} IST member{getISTMemberCount() > 1 ? 's' : ''})</p>
+                        <p className="text-sm font-bold text-indigo-700">Final Amount: ₹{getFinalFee()}</p>
+                      </>
+                    )}
+                    <p className="text-sm text-gray-600">Transaction Ref: {transactionRef || 'N/A'}</p>
                     <p className="text-sm text-gray-600">
                       Screenshot: {screenshot ? `✓ ${screenshot.name}` : 'Not uploaded'}
                     </p>

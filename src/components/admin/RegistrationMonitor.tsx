@@ -1,10 +1,13 @@
+// src\components\admin\RegistrationMonitor.tsx
 import { useState, useEffect } from 'react';
-import { supabase, Event, Registration, Department } from '../../lib/supabase';
+import { supabase, Event, Registration, Department, ISTMember } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import {
   Loader, Download, CheckCircle, XCircle, Search,
   User, Mail, Phone, Clock, Hash, ImageIcon, ChevronDown, ChevronUp, Users, FileDown, Building2
 } from 'lucide-react';
+
+const IST_DISCOUNT_PER_MEMBER = 20;
 
 export function RegistrationMonitor() {
   const { profile } = useAuth();
@@ -23,6 +26,7 @@ export function RegistrationMonitor() {
   const [showRejectModal, setShowRejectModal] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [istEnrollments, setIstEnrollments] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchData();
@@ -34,14 +38,16 @@ export function RegistrationMonitor() {
   }, []);
 
   const fetchData = async () => {
-    const [regsRes, evtsRes, deptRes] = await Promise.all([
+    const [regsRes, evtsRes, deptRes, istRes] = await Promise.all([
       supabase.from('registrations').select('*').order('registered_at', { ascending: false }),
       supabase.from('events').select('*').order('title'),
       supabase.from('departments').select('*').order('name'),
+      supabase.from('ist_members').select('enrollment_number'),
     ]);
     setRegistrations(regsRes.data || []);
     setEvents(evtsRes.data || []);
     setDepartments(deptRes.data || []);
+    setIstEnrollments(new Set((istRes.data || []).map((d: any) => d.enrollment_number.toUpperCase())));
     setLoading(false);
   };
 
@@ -114,15 +120,45 @@ export function RegistrationMonitor() {
     return evt.registration_fee * memberCount;
   };
 
+  const getISTDiscountForReg = (r: Registration): number => {
+    // Primary registrant college_id
+    let istCount = 0;
+    if (r.college_id && istEnrollments.has(r.college_id.trim().toUpperCase())) istCount++;
+    // Team members from registration_members (if loaded) — but we use members[r.id]
+    const regMembers = members[r.id];
+    if (regMembers && regMembers.length > 0) {
+      // Skip index 0 (primary already counted via r.college_id)
+      regMembers.slice(1).forEach((m: any) => {
+        if (m.college_id && istEnrollments.has(m.college_id.trim().toUpperCase())) istCount++;
+      });
+    }
+    return istCount * IST_DISCOUNT_PER_MEMBER;
+  };
+
+  const getNetFee = (r: Registration): number => {
+    return Math.max(0, getRegFee(r) - getISTDiscountForReg(r));
+  };
+
   const buildCSVContent = (regs: Registration[]) => {
-    const header = ['Registration ID', 'Name', 'Email', 'Phone', 'College ID', 'Type', 'Team Name', 'Event', 'Department', 'Fee/Person (₹)', 'Members', 'Total Amount (₹)', 'Transaction Ref', 'Status', 'Registered At', 'Reviewed At'];
+    const header = ['Registration ID', 'Name', 'Email', 'Phone', 'College ID', 'Type', 'Team Name', 'Event', 'Department', 'Fee/Person (₹)', 'Members', 'Gross Amount (₹)', 'IST Discount (₹)', 'Net Amount (₹)', 'Transaction Ref', 'Status', 'Registered At', 'Reviewed At'];
     const rows = regs.map(r => {
       const evt = events.find(e => e.id === r.event_id);
       const dept = evt?.department_id ? departments.find(d => d.id === evt.department_id) : null;
       const memberCount = r.registration_type === 'group'
         ? (r.team_members?.length || 0) + 1
         : getMemberCountForType(r.registration_type);
-      const totalFee = (evt?.registration_fee ?? 0) * memberCount;
+      const grossFee = (evt?.registration_fee ?? 0) * memberCount;
+      // IST discount: check primary college_id (team member college_ids not in CSV without expand)
+      let istCount = 0;
+      if (r.college_id && istEnrollments.has(r.college_id.trim().toUpperCase())) istCount++;
+      const regMembers = members[r.id];
+      if (regMembers && regMembers.length > 0) {
+        regMembers.slice(1).forEach((m: any) => {
+          if (m.college_id && istEnrollments.has(m.college_id.trim().toUpperCase())) istCount++;
+        });
+      }
+      const istDiscount = istCount * IST_DISCOUNT_PER_MEMBER;
+      const netFee = Math.max(0, grossFee - istDiscount);
       return [
         r.registration_id,
         `"${r.name}"`,
@@ -135,7 +171,9 @@ export function RegistrationMonitor() {
         `"${dept?.name || 'General'}"`,
         evt?.registration_fee ?? 0,
         memberCount,
-        totalFee,
+        grossFee,
+        istDiscount,
+        netFee,
         r.transaction_reference || '',
         r.status,
         new Date(r.registered_at).toLocaleString(),
