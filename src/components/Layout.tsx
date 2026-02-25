@@ -157,11 +157,11 @@ export function Layout() {
         )}
       </nav>
 
-      <main className="pt-28 pb-16 flex-1 px-4 sm:px-6 lg:px-8">
+      <main className="pt-28 pb-16 flex-1 px-4 sm:px-6 lg:px-8 relative z-10">
         <Outlet />
       </main>
 
-      <footer className="bg-white/80 backdrop-blur-md text-gray-600 py-2 border border-gray-100 shadow-lg flex-shrink-0 m rounded-[2rem] m-3">
+      <footer className="bg-white/80 backdrop-blur-md text-gray-600 py-2 border border-gray-100 shadow-lg flex-shrink-0 m rounded-[2rem] m-3 relative z-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
           <div className="w-full flex flex-col items-center gap-6 mb-6">
             {/* College Info */}

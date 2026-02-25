@@ -140,7 +140,7 @@ export function RegistrationMonitor() {
   };
 
   const buildCSVContent = (regs: Registration[]) => {
-    const header = ['Registration ID', 'Name', 'Email', 'Phone', 'College ID', 'Type', 'Team Name', 'Event', 'Department', 'Fee/Person (₹)', 'Members', 'Gross Amount (₹)', 'IST Discount (₹)', 'Net Amount (₹)', 'Transaction Ref', 'Status', 'Registered At', 'Reviewed At'];
+    const header = ['Registration ID', 'Name', 'Email', 'Phone', 'College ID', 'Type', 'Team Name', 'Event', 'Department', 'Fee/Person (₹)', 'Members', 'Gross Amount (₹)', 'IST Discount (₹)', 'Net Amount (₹)', 'Payer Name / Ref', 'Status', 'Registered At', 'Reviewed At'];
     const rows = regs.map(r => {
       const evt = events.find(e => e.id === r.event_id);
       const dept = evt?.department_id ? departments.find(d => d.id === evt.department_id) : null;
@@ -376,7 +376,7 @@ export function RegistrationMonitor() {
                       <span className="flex items-center text-gray-600"><Hash size={13} className="mr-1.5 text-gray-400" />{reg.college_id || 'N/A'}</span>
                       <span className="flex items-center text-gray-600"><Users size={13} className="mr-1.5 text-gray-400" />{reg.registration_type} {reg.team_name && `(${reg.team_name})`}</span>
                       <span className="flex items-center text-gray-600"><Clock size={13} className="mr-1.5 text-gray-400" />{new Date(reg.registered_at).toLocaleString()}</span>
-                      {reg.transaction_reference && <span className="flex items-center text-gray-600"><Hash size={13} className="mr-1.5 text-gray-400" />Txn: {reg.transaction_reference}</span>}
+                      {reg.transaction_reference && <span className="flex items-center text-gray-600"><Hash size={13} className="mr-1.5 text-gray-400" />Payer Name / Ref: {reg.transaction_reference}</span>}
                     </div>
                     {members[reg.id] && members[reg.id].length > 0 && (
                       <div className="mb-3">

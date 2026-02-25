@@ -351,20 +351,17 @@ export function RegisterPage() {
           <div className="flex items-center justify-between">
             {stepLabels.map((label, idx) => (
               <div key={label} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  idx + 1 <= step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${idx + 1 <= step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'
+                  }`}>
                   {idx + 1 <= step ? (idx + 1 < step ? '✓' : idx + 1) : idx + 1}
                 </div>
-                <span className={`ml-2 text-xs font-medium hidden sm:inline ${
-                  idx + 1 <= step ? 'text-indigo-600' : 'text-gray-400'
-                }`}>
+                <span className={`ml-2 text-xs font-medium hidden sm:inline ${idx + 1 <= step ? 'text-indigo-600' : 'text-gray-400'
+                  }`}>
                   {label}
                 </span>
                 {idx < stepLabels.length - 1 && (
-                  <div className={`w-8 sm:w-16 h-0.5 mx-2 ${
-                    idx + 1 < step ? 'bg-indigo-600' : 'bg-gray-200'
-                  }`} />
+                  <div className={`w-8 sm:w-16 h-0.5 mx-2 ${idx + 1 < step ? 'bg-indigo-600' : 'bg-gray-200'
+                    }`} />
                 )}
               </div>
             ))}
@@ -403,11 +400,10 @@ export function RegisterPage() {
                   <button
                     key={type}
                     onClick={() => setRegType(type)}
-                    className={`p-4 rounded-xl border-2 text-center transition-all ${
-                      regType === type
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-200 hover:border-indigo-300 text-gray-700'
-                    }`}
+                    className={`p-4 rounded-xl border-2 text-center transition-all ${regType === type
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                      : 'border-gray-200 hover:border-indigo-300 text-gray-700'
+                      }`}
                   >
                     <span className="block text-2xl mb-1">
                       {type === 'solo' ? '👤' : type === 'duo' ? '👥' : type === 'trio' ? '👨‍👩‍👦' : type === 'quad' ? '👨‍👩‍👧‍👦' : '🏟️'}
@@ -606,7 +602,7 @@ export function RegisterPage() {
               {/* Transaction Reference */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  UPI Transaction ID / Reference No *
+                  Type other person name, incase of other person pay the fees insteed of Registered member *
                 </label>
                 <div className="relative">
                   <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -615,7 +611,7 @@ export function RegisterPage() {
                     value={transactionRef}
                     onChange={e => setTransactionRef(e.target.value)}
                     className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${errors.transactionRef ? 'border-red-400' : 'border-gray-300'}`}
-                    placeholder="Enter transaction ID"
+                    placeholder="Payer Name or Transaction ID"
                   />
                 </div>
                 {errors.transactionRef && <p className="text-red-600 text-xs mt-1">{errors.transactionRef}</p>}
@@ -628,9 +624,8 @@ export function RegisterPage() {
                 </label>
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                    errors.screenshot ? 'border-red-400 bg-red-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50'
-                  }`}
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${errors.screenshot ? 'border-red-400 bg-red-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50'
+                    }`}
                 >
                   {screenshotPreview ? (
                     <div>
@@ -731,7 +726,8 @@ export function RegisterPage() {
                 </button>
               </div>
             </div>
-          )}
+          )
+          }
 
           {/* STEP 5: Confirmation */}
           {step === 5 && (
@@ -774,7 +770,8 @@ export function RegisterPage() {
 
               <p className="text-xs text-gray-400 mt-6">You will be redirected to the home page in 15 seconds...</p>
             </div>
-          )}
+          )
+          }
         </>
       )}
     </div>

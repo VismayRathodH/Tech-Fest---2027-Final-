@@ -49,7 +49,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
           {event.title}
         </h3>
 
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+        <p className="text-gray-600 text-sm mb-4 whitespace-pre-wrap">
           {event.description}
         </p>
 

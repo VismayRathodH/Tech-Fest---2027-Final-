@@ -144,7 +144,7 @@ export function DepartmentEventsPage() {
                   <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors mb-2">
                     {event.title}
                   </h3>
-                  <p className="text-gray-500 text-sm mb-4 line-clamp-2">{event.description}</p>
+                  <p className="text-gray-500 text-sm mb-4 whitespace-pre-wrap">{event.description}</p>
 
                   <div className="space-y-3 text-sm text-gray-600 mb-6 flex-grow">
                     <div className="flex items-center bg-gray-50/50 p-2 rounded-xl border border-gray-100/50">
@@ -189,8 +189,8 @@ export function DepartmentEventsPage() {
                   <Link
                     to={isFull ? '#' : `/register/${event.id}`}
                     className={`block w-full text-center py-2.5 rounded-lg font-medium transition-all ${isFull
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'btn-primary'
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'btn-primary'
                       }`}
                     onClick={e => isFull && e.preventDefault()}
                   >
