@@ -237,11 +237,10 @@ export function CoordinatorDashboardPage() {
               <button
                 key={evt.id}
                 onClick={() => setSelectedEvent(evt)}
-                className={`w-full text-left p-3 rounded-xl border transition-all ${
-                  selectedEvent?.id === evt.id
+                className={`w-full text-left p-3 rounded-xl border transition-all ${selectedEvent?.id === evt.id
                     ? 'border-indigo-300 bg-indigo-50 shadow-sm'
                     : 'border-gray-200 hover:border-indigo-200 bg-white'
-                }`}
+                  }`}
               >
                 <p className="font-medium text-gray-900 text-sm leading-tight">{evt.title}</p>
                 <p className="text-xs text-gray-500 mt-1">
@@ -331,7 +330,7 @@ export function CoordinatorDashboardPage() {
                               </div>
                               {reg.transaction_reference && (
                                 <div className="flex items-center text-gray-600">
-                                  <Hash size={14} className="mr-2 text-gray-400" /> Txn: {reg.transaction_reference}
+                                  <Hash size={14} className="mr-2 text-gray-400" /> Payer Name / Ref: {reg.transaction_reference}
                                 </div>
                               )}
                             </div>

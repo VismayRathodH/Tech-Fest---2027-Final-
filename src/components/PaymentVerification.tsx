@@ -13,6 +13,7 @@ export function PaymentVerification({ onClose }: PaymentVerificationProps) {
     const [registration, setRegistration] = useState<any>(null);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [transactionRef, setTransactionRef] = useState('');
 
     const handleSearch = async () => {
         if (!registrationId.trim()) return;
@@ -51,7 +52,9 @@ export function PaymentVerification({ onClose }: PaymentVerificationProps) {
             const { error: updateError } = await supabase
                 .from('registrations')
                 .update({
-                    status: 'pending' // Ensure it's pending for admin review
+                    status: 'pending',
+                    transaction_reference: transactionRef,
+                    payment_id: transactionRef
                 })
                 .eq('id', registration.id);
 
@@ -147,7 +150,19 @@ export function PaymentVerification({ onClose }: PaymentVerificationProps) {
                                         </button>
                                     </div>
 
-                                    {/* Transaction ID removed as per user request */}
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Type other person name, incase of other person pay the fees insteed of Registered member *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={transactionRef}
+                                            onChange={(e) => setTransactionRef(e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Payer Name or Transaction ID"
+                                            required
+                                        />
+                                    </div>
                                     {error && <p className="text-sm text-red-600">{error}</p>}
 
                                     <button

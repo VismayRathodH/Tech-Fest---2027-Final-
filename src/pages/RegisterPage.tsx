@@ -185,7 +185,7 @@ export function RegisterPage() {
     if (s === 3) {
       if (event && event.registration_fee > 0) {
         if (!screenshot) errs.screenshot = 'Payment screenshot is required';
-        if (!transactionRef.trim()) errs.transactionRef = 'Transaction reference is required';
+        if (!transactionRef.trim()) errs.transactionRef = 'Payer name or reference is required';
       }
     }
 
@@ -606,7 +606,7 @@ export function RegisterPage() {
               {/* Transaction Reference */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  UPI Transaction ID / Reference No *
+                  Type other person name, incase of other person pay the fees insteed of Registered member *
                 </label>
                 <div className="relative">
                   <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -615,7 +615,7 @@ export function RegisterPage() {
                     value={transactionRef}
                     onChange={e => setTransactionRef(e.target.value)}
                     className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 ${errors.transactionRef ? 'border-red-400' : 'border-gray-300'}`}
-                    placeholder="Enter transaction ID"
+                    placeholder="Payer Name or Transaction ID"
                   />
                 </div>
                 {errors.transactionRef && <p className="text-red-600 text-xs mt-1">{errors.transactionRef}</p>}
@@ -699,7 +699,7 @@ export function RegisterPage() {
                         <p className="text-sm font-bold text-indigo-700">Final Amount: ₹{getFinalFee()}</p>
                       </>
                     )}
-                    <p className="text-sm text-gray-600">Transaction Ref: {transactionRef || 'N/A'}</p>
+                    <p className="text-sm text-gray-600">Payer Name / Ref: {transactionRef || 'N/A'}</p>
                     <p className="text-sm text-gray-600">
                       Screenshot: {screenshot ? `✓ ${screenshot.name}` : 'Not uploaded'}
                     </p>
