@@ -143,10 +143,11 @@ export function EventManager() {
                 <td className="px-4 py-3 text-gray-600">₹{evt.registration_fee || 0}</td>
                 <td className="px-4 py-3 text-gray-600">{evt.current_attendees}{evt.max_attendees ? ` / ${evt.max_attendees}` : ''}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${evt.status === 'upcoming' ? 'bg-green-100 text-green-700' :
-                      evt.status === 'ongoing' ? 'bg-yellow-100 text-yellow-700' :
-                        evt.status === 'completed' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-700'
-                    }`}>{evt.status}</span>
+                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
+                    evt.status === 'upcoming' ? 'bg-green-100 text-green-700' :
+                    evt.status === 'ongoing' ? 'bg-yellow-100 text-yellow-700' :
+                    evt.status === 'completed' ? 'bg-gray-100 text-gray-600' : 'bg-red-100 text-red-700'
+                  }`}>{evt.status}</span>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button onClick={() => openEdit(evt)} className="text-indigo-600 hover:text-indigo-800 mr-3"><Edit size={16} /></button>
@@ -247,8 +248,9 @@ export function EventManager() {
                     { key: 'allow_quad', label: 'Quad' },
                     { key: 'allow_group', label: 'Group' },
                   ].map(({ key, label }) => (
-                    <label key={key} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${(form as any)[key] ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                      }`}>
+                    <label key={key} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                      (form as any)[key] ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}>
                       <input type="checkbox" checked={(form as any)[key]} onChange={e => setForm({ ...form, [key]: e.target.checked })} className="rounded text-indigo-600" />
                       <span className="text-sm font-medium">{label}</span>
                     </label>

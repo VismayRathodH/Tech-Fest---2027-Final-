@@ -55,7 +55,7 @@ export function RegisterPage() {
   // Auto-redirect to home after successful registration
   useEffect(() => {
     if (step === 5) {
-      const timer = setTimeout(() => navigate('/'), 60000);
+      const timer = setTimeout(() => navigate('/'), 15000);
       return () => clearTimeout(timer);
     }
   }, [step, navigate]);
@@ -352,17 +352,20 @@ export function RegisterPage() {
           <div className="flex items-center justify-between">
             {stepLabels.map((label, idx) => (
               <div key={label} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${idx + 1 <= step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'
-                  }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  idx + 1 <= step ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'
+                }`}>
                   {idx + 1 <= step ? (idx + 1 < step ? '✓' : idx + 1) : idx + 1}
                 </div>
-                <span className={`ml-2 text-xs font-medium hidden sm:inline ${idx + 1 <= step ? 'text-indigo-600' : 'text-gray-400'
-                  }`}>
+                <span className={`ml-2 text-xs font-medium hidden sm:inline ${
+                  idx + 1 <= step ? 'text-indigo-600' : 'text-gray-400'
+                }`}>
                   {label}
                 </span>
                 {idx < stepLabels.length - 1 && (
-                  <div className={`w-8 sm:w-16 h-0.5 mx-2 ${idx + 1 < step ? 'bg-indigo-600' : 'bg-gray-200'
-                    }`} />
+                  <div className={`w-8 sm:w-16 h-0.5 mx-2 ${
+                    idx + 1 < step ? 'bg-indigo-600' : 'bg-gray-200'
+                  }`} />
                 )}
               </div>
             ))}
@@ -401,10 +404,11 @@ export function RegisterPage() {
                   <button
                     key={type}
                     onClick={() => setRegType(type)}
-                    className={`p-4 rounded-xl border-2 text-center transition-all ${regType === type
-                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                      : 'border-gray-200 hover:border-indigo-300 text-gray-700'
-                      }`}
+                    className={`p-4 rounded-xl border-2 text-center transition-all ${
+                      regType === type
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                        : 'border-gray-200 hover:border-indigo-300 text-gray-700'
+                    }`}
                   >
                     <span className="block text-2xl mb-1">
                       {type === 'solo' ? '👤' : type === 'duo' ? '👥' : type === 'trio' ? '👨‍👩‍👦' : type === 'quad' ? '👨‍👩‍👧‍👦' : '🏟️'}
@@ -628,8 +632,9 @@ export function RegisterPage() {
                 </label>
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${errors.screenshot ? 'border-red-400 bg-red-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50'
-                    }`}
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
+                    errors.screenshot ? 'border-red-400 bg-red-50' : 'border-gray-300 hover:border-indigo-400 bg-gray-50'
+                  }`}
                 >
                   {screenshotPreview ? (
                     <div>
@@ -771,7 +776,7 @@ export function RegisterPage() {
                 </Link>
               </div>
 
-              <p className="text-xs text-gray-400 mt-6">You will be redirected to the home page in 1 minute...</p>
+              <p className="text-xs text-gray-400 mt-6">You will be redirected to the home page in 15 seconds...</p>
             </div>
           )}
         </>
