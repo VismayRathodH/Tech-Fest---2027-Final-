@@ -1,7 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Users, ArrowLeft, IndianRupee, Tag } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, ArrowLeft, IndianRupee } from 'lucide-react';
 import { supabase, Event, Department } from '../lib/supabase';
+
+function ExpandableDescription({ text }: { text: string }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const shouldTruncate = text ? text.length > 150 : false;
+
+  return (
+    <div className="relative">
+      <p className={`text-gray-500 text-sm mb-4 whitespace-pre-wrap transition-all duration-300 ${!isExpanded ? 'line-clamp-3' : ''}`}>
+        {text}
+      </p>
+      {shouldTruncate && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setIsExpanded(!isExpanded);
+          }}
+          className="text-indigo-600 text-sm font-semibold hover:text-indigo-800 transition-colors mb-4 block"
+        >
+          {isExpanded ? 'Read Less' : 'Read More'}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function DepartmentEventsPage() {
   const { code } = useParams<{ code: string }>();
@@ -144,7 +168,7 @@ export function DepartmentEventsPage() {
                   <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors mb-2">
                     {event.title}
                   </h3>
-                  <p className="text-gray-500 text-sm mb-4 whitespace-pre-wrap">{event.description}</p>
+                  <ExpandableDescription text={event.description} />
 
                   <div className="space-y-3 text-sm text-gray-600 mb-6 flex-grow">
                     <div className="flex items-center bg-gray-50/50 p-2 rounded-xl border border-gray-100/50">

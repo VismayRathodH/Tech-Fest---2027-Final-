@@ -14,7 +14,7 @@ export function RegistrationForm({ event, onClose, onSuccess }: RegistrationForm
     email: '',
     confirmEmail: '',
     phone: '',
-    registration_type: 'solo' as 'solo' | 'duo' | 'trio' | 'quad',
+    registration_type: 'solo' as 'solo' | 'duo' | 'trio' | 'quad' | 'group',
     team_members: [] as string[],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -44,7 +44,9 @@ export function RegistrationForm({ event, onClose, onSuccess }: RegistrationForm
     if (formData.registration_type !== 'solo') {
       const expectedMembers =
         formData.registration_type === 'duo' ? 1 :
-          formData.registration_type === 'trio' ? 2 : 3;
+          formData.registration_type === 'trio' ? 2 :
+            formData.registration_type === 'quad' ? 3 :
+              formData.team_members.length;
 
       for (let i = 0; i < expectedMembers; i++) {
         if (!formData.team_members[i]?.trim()) {
@@ -288,8 +290,61 @@ export function RegistrationForm({ event, onClose, onSuccess }: RegistrationForm
                       Quad
                     </button>
                   )}
+                  {event.allow_group && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, registration_type: 'group', team_members: Array(1).fill('') })}
+                      className={`px-4 py-2 text-sm border rounded-lg transition-colors ${formData.registration_type === 'group' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                    >
+                      Group
+                    </button>
+                  )}
                 </div>
               </div>
+
+              {formData.registration_type === 'group' && (
+                <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-100 mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Team Size (including you)
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentSize = formData.team_members.length + 1;
+                        if (currentSize > 2) {
+                          setFormData({
+                            ...formData,
+                            team_members: formData.team_members.slice(0, -1)
+                          });
+                        }
+                      }}
+                      className="w-10 h-10 flex items-center justify-center bg-white border border-gray-300 rounded-lg text-xl font-bold hover:bg-gray-50 text-gray-700"
+                    >
+                      -
+                    </button>
+                    <span className="text-xl font-bold text-indigo-600 w-8 text-center">
+                      {formData.team_members.length + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentSize = formData.team_members.length + 1;
+                        if (currentSize < 6) {
+                          setFormData({
+                            ...formData,
+                            team_members: [...formData.team_members, '']
+                          });
+                        }
+                      }}
+                      className="w-10 h-10 flex items-center justify-center bg-white border border-gray-300 rounded-lg text-xl font-bold hover:bg-gray-50 text-gray-700"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs text-gray-500 italic">(Min 2, Max 6 members)</span>
+                  </div>
+                </div>
+              )}
 
               {formData.registration_type !== 'solo' && (
                 <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">

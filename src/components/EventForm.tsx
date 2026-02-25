@@ -23,6 +23,7 @@ export function EventForm({ event, onClose, onSuccess }: EventFormProps) {
     allow_double: false,
     allow_triple: false,
     allow_quad: false,
+    allow_group: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,6 +44,7 @@ export function EventForm({ event, onClose, onSuccess }: EventFormProps) {
         allow_double: event.allow_double ?? false,
         allow_triple: event.allow_triple ?? false,
         allow_quad: event.allow_quad ?? false,
+        allow_group: event.allow_group ?? false,
       });
     }
   }, [event]);
@@ -83,6 +85,8 @@ export function EventForm({ event, onClose, onSuccess }: EventFormProps) {
         allow_double: formData.allow_double,
         allow_triple: formData.allow_triple,
         allow_quad: formData.allow_quad,
+        allow_group: formData.allow_group,
+        max_team_size: 6, // Updated to 6 as per user request
       };
 
       if (event) {
@@ -303,6 +307,15 @@ export function EventForm({ event, onClose, onSuccess }: EventFormProps) {
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-700">Quad (Max 4)</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.allow_group}
+                    onChange={(e) => setFormData({ ...formData, allow_group: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Group (2-6)</span>
                 </label>
               </div>
             </div>

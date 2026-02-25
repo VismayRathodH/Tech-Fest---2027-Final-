@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Calendar, MapPin, Clock, Users } from 'lucide-react';
 import { Event } from '../lib/supabase';
 
@@ -13,6 +14,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
     day: 'numeric',
     year: 'numeric',
   });
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const spotsLeft = event.max_attendees
     ? event.max_attendees - event.current_attendees
@@ -49,9 +51,22 @@ export function EventCard({ event, onClick }: EventCardProps) {
           {event.title}
         </h3>
 
-        <p className="text-gray-600 text-sm mb-4 whitespace-pre-wrap">
-          {event.description}
-        </p>
+        <div className="relative">
+          <p className={`text-gray-600 text-sm mb-4 whitespace-pre-wrap transition-all duration-300 ${!isExpanded ? 'line-clamp-3' : ''}`}>
+            {event.description}
+          </p>
+          {event.description && event.description.length > 150 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(!isExpanded);
+              }}
+              className="text-indigo-600 text-sm font-semibold hover:text-indigo-800 transition-colors mb-4 block"
+            >
+              {isExpanded ? 'Read Less' : 'Read More'}
+            </button>
+          )}
+        </div>
 
         <div className="space-y-3 text-sm text-gray-700">
           <div className="flex items-center bg-white/50 backdrop-blur-sm p-2.5 rounded-xl border border-white/50">
