@@ -79,15 +79,18 @@ async function uploadWithRetry(
 ): Promise<void> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const { error } = await supabase.storage.from(bucket).upload(path, file, {
-        upsert: true, // Handle potential resume/retry overwrites
-      });
-      if (error) throw error;
+      console.log(`Upload attempt ${attempt} for ${path} (${file.size} bytes, type: ${file.type})`);
+      const { error } = await supabase.storage.from(bucket).upload(path, file);
+      if (error) {
+        console.error(`Supabase Storage Error (Bucket: ${bucket}, Attempt: ${attempt}):`, error);
+        throw error;
+      }
+      console.log(`Upload successful: ${path}`);
       return; // Success
     } catch (err: any) {
-      console.warn(`Upload attempt ${attempt} failed:`, err);
+      console.warn(`Upload attempt ${attempt} failed:`, err.message || err);
       if (attempt === retries) throw err; // Final attempt failed
-      // Wait before next retry
+      // Wait before next retry with exponential backoff
       await new Promise(resolve => setTimeout(resolve, delay * attempt));
     }
   }
@@ -324,7 +327,8 @@ export function RegisterPage() {
           screenshotPath = fileName;
         } catch (uploadErr: any) {
           console.error('Final upload failure after retries:', uploadErr);
-          throw new Error('Failed to upload payment screenshot. Please check your network and try again.');
+          const errorMsg = uploadErr.message || 'Unknown network error';
+          throw new Error(`Failed to upload payment screenshot (${errorMsg}). Please check your internet connection and console for details.`);
         }
       }
 
