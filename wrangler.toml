@@ -1,0 +1,11 @@
+# Cloudflare Pages configuration
+name = "event-management-system"
+compatibility_date = "2026-02-26"
+
+# Pages-specific config
+[site]
+bucket = "./dist"
+
+# Environment variables (set these in Cloudflare Dashboard > Pages > Settings > Environment Variables)
+# VITE_SUPABASE_URL = "your-supabase-url"
+# VITE_SUPABASE_ANON_KEY = "your-supabase-anon-key"

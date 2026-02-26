@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "deploy": "npm run build && npx wrangler pages deploy dist --project-name=event-management-system",
+    "deploy:preview": "npm run build && npx wrangler pages deploy dist --project-name=event-management-system --branch=preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
