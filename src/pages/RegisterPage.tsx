@@ -20,6 +20,79 @@ const emptyParticipant = (): ParticipantForm => ({
   name: '', email: '', phone: '', college_id: '',
 });
 
+/**
+ * Compresses an image file using Canvas API
+ * Reduces dimensions or quality to ensure it's robust for mobile uploads
+ */
+async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<File | Blob> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Calculate new dimensions while maintaining aspect ratio
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Canvas context failed'));
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+            } else {
+              reject(new Error('Compression failed'));
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+}
+
+/**
+ * Uploads a file to Supabase Storage with retry logic
+ */
+async function uploadWithRetry(
+  bucket: string,
+  path: string,
+  file: File | Blob,
+  retries = 3,
+  delay = 2000
+): Promise<void> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const { error } = await supabase.storage.from(bucket).upload(path, file, {
+        upsert: true, // Handle potential resume/retry overwrites
+      });
+      if (error) throw error;
+      return; // Success
+    } catch (err: any) {
+      console.warn(`Upload attempt ${attempt} failed:`, err);
+      if (attempt === retries) throw err; // Final attempt failed
+      // Wait before next retry
+      await new Promise(resolve => setTimeout(resolve, delay * attempt));
+    }
+  }
+}
+
 export function RegisterPage() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
@@ -240,13 +313,19 @@ export function RegisterPage() {
       // 2. Upload payment screenshot if exists
       let screenshotPath = '';
       if (screenshot) {
-        const ext = screenshot.name.split('.').pop();
-        const fileName = `${genId}.${ext}`;
-        const { error: uploadErr } = await supabase.storage
-          .from('payment-screenshots')
-          .upload(fileName, screenshot);
-        if (uploadErr) throw uploadErr;
-        screenshotPath = fileName;
+        try {
+          // Compress image before upload
+          const compressedFile = await compressImage(screenshot);
+          const ext = screenshot.name.split('.').pop() || 'jpg';
+          const fileName = `${genId}.${ext}`;
+
+          // Upload with retry logic
+          await uploadWithRetry('payment-screenshots', fileName, compressedFile);
+          screenshotPath = fileName;
+        } catch (uploadErr: any) {
+          console.error('Final upload failure after retries:', uploadErr);
+          throw new Error('Failed to upload payment screenshot. Please check your network and try again.');
+        }
       }
 
       // 3. Insert registration
