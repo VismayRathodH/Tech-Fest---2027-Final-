@@ -140,7 +140,7 @@ export function RegistrationMonitor() {
   };
 
   const buildCSVContent = (regs: Registration[]) => {
-    const header = ['Registration ID', 'Name', 'Email', 'Phone', 'College ID', 'Type', 'Team Name', 'Event', 'Department', 'Fee/Person (₹)', 'Members', 'Gross Amount (₹)', 'IST Discount (₹)', 'Net Amount (₹)', 'Payer Name / Ref', 'Status', 'Registered At', 'Reviewed At'];
+    const header = ['Registration ID', 'Name', 'Email', 'Phone', 'College ID', 'Type', 'Team Name', 'Event', 'Department', 'Fee/Person (₹)', 'Members', 'Gross Amount (₹)', 'IST Discount (₹)', 'Net Amount (₹)', 'Payer Name / Ref', 'Status', 'IP Address', 'User Agent', 'Platform', 'Registered At', 'Reviewed At'];
     const rows = regs.map(r => {
       const evt = events.find(e => e.id === r.event_id);
       const dept = evt?.department_id ? departments.find(d => d.id === evt.department_id) : null;
@@ -176,6 +176,9 @@ export function RegistrationMonitor() {
         netFee,
         r.transaction_reference || '',
         r.status,
+        r.ip_address || '',
+        `"${r.user_agent || ''}"`,
+        r.browser_info?.platform || '',
         new Date(r.registered_at).toLocaleString(),
         r.reviewed_at ? new Date(r.reviewed_at).toLocaleString() : '',
       ];
@@ -378,6 +381,36 @@ export function RegistrationMonitor() {
                       <span className="flex items-center text-gray-600"><Clock size={13} className="mr-1.5 text-gray-400" />{new Date(reg.registered_at).toLocaleString()}</span>
                       {reg.transaction_reference && <span className="flex items-center text-gray-600"><Hash size={13} className="mr-1.5 text-gray-400" />Payer Name / Ref: {reg.transaction_reference}</span>}
                     </div>
+
+                    {(reg.ip_address || reg.user_agent) && (
+                      <div className="mb-4 bg-white p-3 rounded-lg border border-gray-100">
+                        <p className="text-xs font-bold text-indigo-600 uppercase mb-2 flex items-center">
+                          <Building2 size={12} className="mr-1" /> Security & Tracking
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-[11px]">
+                          <div>
+                            <p className="text-gray-400 font-medium">IP Address</p>
+                            <p className="text-gray-700 font-mono">{reg.ip_address || 'Unknown'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 font-medium">Platform / OS</p>
+                            <p className="text-gray-700">{reg.browser_info?.platform || 'Unknown'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 font-medium">Screen Resolution</p>
+                            <p className="text-gray-700">{reg.browser_info?.screen_resolution || 'Unknown'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 font-medium">Referrer</p>
+                            <p className="text-gray-700 truncate" title={reg.browser_info?.referrer}>{reg.browser_info?.referrer || 'Direct'}</p>
+                          </div>
+                          <div className="sm:col-span-2">
+                            <p className="text-gray-400 font-medium">User Agent</p>
+                            <p className="text-gray-700 truncate text-[10px]" title={reg.user_agent}>{reg.user_agent || 'Unknown'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {members[reg.id] && members[reg.id].length > 0 && (
                       <div className="mb-3">
                         <p className="text-xs font-bold text-gray-500 uppercase mb-1">Members</p>

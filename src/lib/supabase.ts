@@ -81,6 +81,15 @@ export interface Registration {
   reviewed_at: string | null;
   registered_at: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'attended' | 'rejected';
+  ip_address?: string;
+  user_agent?: string;
+  browser_info?: {
+    platform?: string;
+    language?: string;
+    screen_resolution?: string;
+    vendor?: string;
+    referrer?: string;
+  };
   // Joined
   events?: Event;
   registration_members?: RegistrationMember[];

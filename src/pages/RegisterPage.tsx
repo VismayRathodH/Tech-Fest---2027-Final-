@@ -350,6 +350,15 @@ export function RegisterPage() {
         transaction_reference: transactionRef || null,
         payment_id: transactionRef || null,
         status: 'pending',
+        ip_address: await fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => data.ip).catch(() => 'unknown'),
+        user_agent: navigator.userAgent,
+        browser_info: {
+          platform: navigator.platform,
+          language: navigator.language,
+          screen_resolution: `${window.screen.width}x${window.screen.height}`,
+          vendor: navigator.vendor,
+          referrer: document.referrer || 'direct'
+        }
       });
       if (insertErr) throw insertErr;
 
