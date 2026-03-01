@@ -1,6 +1,5 @@
 // src\pages\AdminDashboardPage.tsx
 import { useState, useEffect } from 'react';
-import { useAuth } from '../lib/AuthContext';
 import { supabase, Department, Event, Registration } from '../lib/supabase';
 import { DepartmentManager } from '../components/admin/DepartmentManager';
 import { EventManager } from '../components/admin/EventManager';
@@ -9,13 +8,12 @@ import { RegistrationMonitor } from '../components/admin/RegistrationMonitor';
 import { ISTMemberManager } from '../components/admin/ISTMemberManager';
 import {
   BarChart3, Building2, Calendar, Users, ClipboardList,
-  Settings, LogOut, Key, Loader, IndianRupee, Award
+  Settings, Key, Loader, IndianRupee, Award
 } from 'lucide-react';
 
 type Tab = 'overview' | 'departments' | 'events' | 'coordinators' | 'registrations' | 'ist-members' | 'settings';
 
 export function AdminDashboardPage() {
-  const { profile } = useAuth();
   const [tab, setTab] = useState<Tab>('overview');
   const [stats, setStats] = useState({ departments: 0, events: 0, coordinators: 0, registrations: 0, pending: 0, approved: 0, rejected: 0 });
   const [deptPayments, setDeptPayments] = useState<{ name: string; code: string; regCount: number; totalAmount: number }[]>([]);
@@ -33,18 +31,27 @@ export function AdminDashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const [deptRes, evtRes, coordRes, regRes, deptsDataRes, istRes] = await Promise.all([
+      const [deptRes, evtRes, coordRes, regRes, deptsDataRes, istRes, membersRes] = await Promise.all([
         supabase.from('departments').select('id', { count: 'exact', head: true }),
         supabase.from('events').select('*'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'coordinator'),
-        supabase.from('registrations').select('*'),
+        supabase.from('registrations').select('*').limit(5000),
         supabase.from('departments').select('*').order('name'),
-        supabase.from('ist_members').select('enrollment_number'),
+        supabase.from('ist_members').select('enrollment_number').limit(5000),
+        supabase.from('registration_members').select('*').limit(5000),
       ]);
       const regs: Registration[] = regRes.data || [];
       const events: Event[] = evtRes.data || [];
       const departments: Department[] = deptsDataRes.data || [];
       const istSet = new Set((istRes.data || []).map((d: any) => (d.enrollment_number as string).toUpperCase()));
+      const allMembers: any[] = membersRes.data || [];
+
+      // Group members by registration ID for efficient lookup
+      const membersByReg = new Map<string, any[]>();
+      allMembers.forEach((m: any) => {
+        if (!membersByReg.has(m.registration_id)) membersByReg.set(m.registration_id, []);
+        membersByReg.get(m.registration_id)!.push(m);
+      });
 
       setStats({
         departments: deptRes.count || 0,
@@ -80,10 +87,27 @@ export function AdminDashboardPage() {
         const evt = events.find(e => e.id === r.event_id);
         if (!evt) return;
         const fee = evt.registration_fee || 0;
-        const members = getMemberCount(r.registration_type, r.team_members);
-        const grossAmount = fee * members;
-        // IST discount (primary registrant only — full member check requires members table)
-        const istCount = (r.college_id && istSet.has(r.college_id.trim().toUpperCase())) ? 1 : 0;
+        const regMembers = membersByReg.get(r.id) || [];
+
+        // Use registration_members if available, else fallback to team_members.length + 1
+        const memberCount = regMembers.length > 0
+          ? regMembers.length
+          : getMemberCount(r.registration_type, r.team_members);
+
+        const grossAmount = fee * memberCount;
+
+        // IST discount calculation
+        let istCount = 0;
+        if (regMembers.length > 0) {
+          // Check all members from registration_members table
+          regMembers.forEach(m => {
+            if (m.college_id && istSet.has(m.college_id.trim().toUpperCase())) istCount++;
+          });
+        } else {
+          // Fallback if members table not populated for this reg (check primary only)
+          if (r.college_id && istSet.has(r.college_id.trim().toUpperCase())) istCount++;
+        }
+
         const discount = istCount * IST_DISCOUNT;
         const amount = Math.max(0, grossAmount - discount);
         const key = evt.department_id || '__general__';
@@ -153,9 +177,8 @@ export function AdminDashboardPage() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-              tab === key ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all ${tab === key ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              }`}
           >
             <Icon size={16} className="mr-1.5" />
             {label}

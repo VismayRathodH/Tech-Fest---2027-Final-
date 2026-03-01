@@ -224,6 +224,7 @@ export function RegisterPage() {
       while (arr.length < count) arr.push(emptyParticipant());
       return arr.slice(0, count);
     });
+    setIstChecked(false); // Reset IST check when structure changes
   }, [regType, groupSize]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -269,11 +270,11 @@ export function RegisterPage() {
     return Object.keys(errs).length === 0;
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (validateStep(step)) {
       // Check IST membership when leaving step 2
       if (step === 2) {
-        checkISTMembership();
+        await checkISTMembership();
       }
       // Skip payment step if fee is 0
       if (step === 2 && event && event.registration_fee <= 0) {
@@ -419,15 +420,9 @@ export function RegisterPage() {
   const availableTypes = getAvailableTypes(event);
 
   // Step indicator
-  const totalSteps = event.registration_fee > 0 ? 5 : 4;
   const stepLabels = event.registration_fee > 0
     ? ['Type', 'Details', 'Payment', 'Review', 'Done']
     : ['Type', 'Details', 'Review', 'Done'];
-
-  const currentStepLabel = (s: number) => {
-    if (event.registration_fee <= 0 && s >= 3) return s + 1; // skip payment display
-    return s;
-  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 animate-fadeIn">

@@ -1,10 +1,10 @@
 // src\components\admin\RegistrationMonitor.tsx
 import { useState, useEffect } from 'react';
-import { supabase, Event, Registration, Department, ISTMember } from '../../lib/supabase';
+import { supabase, Event, Registration, Department } from '../../lib/supabase';
 import { useAuth } from '../../lib/AuthContext';
 import {
   Loader, Download, CheckCircle, XCircle, Search,
-  User, Mail, Phone, Clock, Hash, ImageIcon, ChevronDown, ChevronUp, Users, FileDown, Building2
+  Mail, Phone, Clock, Hash, ChevronDown, ChevronUp, Users, FileDown, Building2
 } from 'lucide-react';
 
 const IST_DISCOUNT_PER_MEMBER = 20;
@@ -38,16 +38,27 @@ export function RegistrationMonitor() {
   }, []);
 
   const fetchData = async () => {
-    const [regsRes, evtsRes, deptRes, istRes] = await Promise.all([
-      supabase.from('registrations').select('*').order('registered_at', { ascending: false }),
-      supabase.from('events').select('*').order('title'),
+    const [regsRes, evtsRes, deptRes, istRes, membersRes] = await Promise.all([
+      supabase.from('registrations').select('*').order('registered_at', { ascending: false }).limit(5000),
+      supabase.from('events').select('*').order('title').limit(1000),
       supabase.from('departments').select('*').order('name'),
-      supabase.from('ist_members').select('enrollment_number'),
+      supabase.from('ist_members').select('enrollment_number').limit(5000),
+      supabase.from('registration_members').select('*').order('member_order').limit(5000),
     ]);
-    setRegistrations(regsRes.data || []);
+    const regs = regsRes.data || [];
+    setRegistrations(regs);
     setEvents(evtsRes.data || []);
     setDepartments(deptRes.data || []);
     setIstEnrollments(new Set((istRes.data || []).map((d: any) => d.enrollment_number.toUpperCase())));
+
+    // Group members by registration ID
+    const membersByReg: Record<string, any[]> = {};
+    (membersRes.data || []).forEach(m => {
+      if (!membersByReg[m.registration_id]) membersByReg[m.registration_id] = [];
+      membersByReg[m.registration_id].push(m);
+    });
+    setMembers(membersByReg);
+
     setLoading(false);
   };
 
@@ -121,17 +132,19 @@ export function RegistrationMonitor() {
   };
 
   const getISTDiscountForReg = (r: Registration): number => {
-    // Primary registrant college_id
     let istCount = 0;
-    if (r.college_id && istEnrollments.has(r.college_id.trim().toUpperCase())) istCount++;
-    // Team members from registration_members (if loaded) — but we use members[r.id]
     const regMembers = members[r.id];
+
     if (regMembers && regMembers.length > 0) {
-      // Skip index 0 (primary already counted via r.college_id)
-      regMembers.slice(1).forEach((m: any) => {
+      // If members are loaded, check everyone in the members table
+      regMembers.forEach((m: any) => {
         if (m.college_id && istEnrollments.has(m.college_id.trim().toUpperCase())) istCount++;
       });
+    } else {
+      // Fallback: check primary registrant if members not loaded/missing
+      if (r.college_id && istEnrollments.has(r.college_id.trim().toUpperCase())) istCount++;
     }
+
     return istCount * IST_DISCOUNT_PER_MEMBER;
   };
 
@@ -148,16 +161,7 @@ export function RegistrationMonitor() {
         ? (r.team_members?.length || 0) + 1
         : getMemberCountForType(r.registration_type);
       const grossFee = (evt?.registration_fee ?? 0) * memberCount;
-      // IST discount: check primary college_id (team member college_ids not in CSV without expand)
-      let istCount = 0;
-      if (r.college_id && istEnrollments.has(r.college_id.trim().toUpperCase())) istCount++;
-      const regMembers = members[r.id];
-      if (regMembers && regMembers.length > 0) {
-        regMembers.slice(1).forEach((m: any) => {
-          if (m.college_id && istEnrollments.has(m.college_id.trim().toUpperCase())) istCount++;
-        });
-      }
-      const istDiscount = istCount * IST_DISCOUNT_PER_MEMBER;
+      const istDiscount = getISTDiscountForReg(r);
       const netFee = Math.max(0, grossFee - istDiscount);
       return [
         r.registration_id,
@@ -249,7 +253,7 @@ export function RegistrationMonitor() {
   });
 
   const totalAmount = filteredRegs.reduce((sum, r) => {
-    return sum + getRegFee(r);
+    return sum + getNetFee(r);
   }, 0);
 
   const statusBadge = (status: string) => {
