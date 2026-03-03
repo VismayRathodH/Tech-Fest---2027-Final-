@@ -127,12 +127,12 @@ export function AdminDashboardPage() {
       // Apply manual adjustments after counting registrations
       const finalDeptPayments = Array.from(deptMap.values()).map(d => {
         const originalDept = departments.find(dept => dept.code === d.code && dept.name === d.name);
-        if (profile?.role === 'master_admin' && originalDept && originalDept.manual_adjustment) {
+        if (originalDept && originalDept.manual_adjustment) {
           d.totalAmount += originalDept.manual_adjustment;
           total += originalDept.manual_adjustment;
         }
         return d;
-      }).filter(d => d.regCount > 0 || (profile?.role === 'master_admin' && (departments.find(dept => dept.code === d.code)?.manual_adjustment || 0) !== 0));
+      }).filter(d => d.regCount > 0 || (departments.find(dept => dept.code === d.code)?.manual_adjustment || 0) !== 0);
 
       setDeptPayments(finalDeptPayments);
       setGrandTotal(total);
