@@ -1,6 +1,7 @@
 // src\pages\AdminDashboardPage.tsx
 import { useState, useEffect } from 'react';
 import { supabase, Department, Event, Registration } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 import { DepartmentManager } from '../components/admin/DepartmentManager';
 import { EventManager } from '../components/admin/EventManager';
 import { CoordinatorManager } from '../components/admin/CoordinatorManager';
@@ -14,6 +15,7 @@ import {
 type Tab = 'overview' | 'departments' | 'events' | 'coordinators' | 'registrations' | 'ist-members' | 'settings';
 
 export function AdminDashboardPage() {
+  const { profile } = useAuth();
   const [tab, setTab] = useState<Tab>('overview');
   const [stats, setStats] = useState({ departments: 0, events: 0, coordinators: 0, registrations: 0, pending: 0, approved: 0, rejected: 0 });
   const [deptPayments, setDeptPayments] = useState<{ name: string; code: string; regCount: number; totalAmount: number }[]>([]);
@@ -124,18 +126,13 @@ export function AdminDashboardPage() {
 
       // Apply manual adjustments after counting registrations
       const finalDeptPayments = Array.from(deptMap.values()).map(d => {
-        // d is { name, code, regCount, totalAmount }
-        // Find the original department object to get the adjustment
-        // The key in deptMap was department.id
-        // We can find the id by searching for the code, or better, we should have stored the ID.
-        // Let's find the department by name and code to be safe, or just use the fact that departments array is available.
         const originalDept = departments.find(dept => dept.code === d.code && dept.name === d.name);
-        if (originalDept && originalDept.manual_adjustment) {
+        if (profile?.role === 'master_admin' && originalDept && originalDept.manual_adjustment) {
           d.totalAmount += originalDept.manual_adjustment;
-          total += originalDept.manual_adjustment; // Update the grand total as well
+          total += originalDept.manual_adjustment;
         }
         return d;
-      }).filter(d => d.regCount > 0 || (departments.find(dept => dept.code === d.code)?.manual_adjustment || 0) !== 0);
+      }).filter(d => d.regCount > 0 || (profile?.role === 'master_admin' && (departments.find(dept => dept.code === d.code)?.manual_adjustment || 0) !== 0));
 
       setDeptPayments(finalDeptPayments);
       setGrandTotal(total);

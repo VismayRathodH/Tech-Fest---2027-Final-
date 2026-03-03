@@ -97,7 +97,7 @@ export function DepartmentManager() {
             <tr>
               <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase text-xs">Code</th>
               <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase text-xs">Name</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase text-xs">Adjustment</th>
+              {profile?.role === 'master_admin' && <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase text-xs">Adjustment</th>}
               <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase text-xs">Status</th>
               <th className="px-4 py-3 text-right font-medium text-gray-500 uppercase text-xs">Actions</th>
             </tr>
@@ -107,13 +107,15 @@ export function DepartmentManager() {
               <tr key={dept.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-mono font-bold text-indigo-600">{dept.code}</td>
                 <td className="px-4 py-3 font-medium text-gray-900">{dept.name}</td>
-                <td className="px-4 py-3 text-gray-600 font-medium">
-                  {dept.manual_adjustment ? (
-                    <span className={dept.manual_adjustment > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {dept.manual_adjustment > 0 ? '+' : ''}₹{dept.manual_adjustment}
-                    </span>
-                  ) : '—'}
-                </td>
+                {profile?.role === 'master_admin' && (
+                  <td className="px-4 py-3 text-gray-600 font-medium">
+                    {dept.manual_adjustment ? (
+                      <span className={dept.manual_adjustment > 0 ? 'text-green-600' : 'text-red-600'}>
+                        {dept.manual_adjustment > 0 ? '+' : ''}₹{dept.manual_adjustment}
+                      </span>
+                    ) : '—'}
+                  </td>
+                )}
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${dept.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                     {dept.is_active ? 'Active' : 'Inactive'}
