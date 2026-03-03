@@ -61,7 +61,7 @@ export function Layout() {
                 </Link>
               )}
 
-              {session && profile?.role === 'admin' && (
+              {(profile?.role === 'admin' || profile?.role === 'master_admin') && (
                 <Link
                   to="/admin"
                   className="text-gray-600 hover:text-indigo-600 transition-colors flex items-center text-sm font-medium px-3 py-2 rounded-lg hover:bg-indigo-50"
@@ -127,7 +127,7 @@ export function Layout() {
                   <LayoutDashboard size={16} className="mr-2" /> Dashboard
                 </Link>
               )}
-              {session && profile?.role === 'admin' && (
+              {(profile?.role === 'admin' || profile?.role === 'master_admin') && (
                 <Link
                   to="/admin"
                   className="flex items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-50"

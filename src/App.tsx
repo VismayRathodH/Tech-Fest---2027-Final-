@@ -26,7 +26,7 @@ function App() {
           <Route
             path="/coordinator"
             element={
-              <ProtectedRoute roles={['coordinator', 'admin']}>
+              <ProtectedRoute roles={['coordinator', 'admin', 'master_admin']}>
                 <CoordinatorDashboardPage />
               </ProtectedRoute>
             }
@@ -34,7 +34,7 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute roles={['admin', 'master_admin']}>
                 <AdminDashboardPage />
               </ProtectedRoute>
             }

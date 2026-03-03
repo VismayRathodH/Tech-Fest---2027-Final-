@@ -14,6 +14,7 @@ export interface Department {
   description: string;
   image_url: string;
   is_active: boolean;
+  manual_adjustment?: number;
   created_at: string;
 }
 
@@ -23,7 +24,7 @@ export interface Profile {
   full_name: string;
   email: string;
   phone: string;
-  role: 'admin' | 'coordinator' | 'participant';
+  role: 'master_admin' | 'admin' | 'coordinator' | 'participant';
   created_at: string;
   updated_at: string;
 }

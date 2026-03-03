@@ -14,7 +14,7 @@ export function LoginPage() {
 
   // Redirect if already logged in
   if (session && profile) {
-    if (profile.role === 'admin') {
+    if (profile.role === 'admin' || profile.role === 'master_admin') {
       navigate('/admin', { replace: true });
     } else if (profile.role === 'coordinator') {
       navigate('/coordinator', { replace: true });
@@ -44,7 +44,7 @@ export function LoginPage() {
         .eq('id', data.user.id)
         .single();
 
-      if (profileData?.role === 'admin') {
+      if (profileData?.role === 'admin' || profileData?.role === 'master_admin') {
         navigate('/admin');
       } else if (profileData?.role === 'coordinator') {
         navigate('/coordinator');

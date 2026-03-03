@@ -20,7 +20,6 @@ export function AdminDashboardPage() {
   const [grandTotal, setGrandTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   // Settings
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -121,7 +120,24 @@ export function AdminDashboardPage() {
         total += amount;
       });
 
-      setDeptPayments(Array.from(deptMap.values()).filter(d => d.regCount > 0));
+      setGrandTotal(total);
+
+      // Apply manual adjustments after counting registrations
+      const finalDeptPayments = Array.from(deptMap.values()).map(d => {
+        // d is { name, code, regCount, totalAmount }
+        // Find the original department object to get the adjustment
+        // The key in deptMap was department.id
+        // We can find the id by searching for the code, or better, we should have stored the ID.
+        // Let's find the department by name and code to be safe, or just use the fact that departments array is available.
+        const originalDept = departments.find(dept => dept.code === d.code && dept.name === d.name);
+        if (originalDept && originalDept.manual_adjustment) {
+          d.totalAmount += originalDept.manual_adjustment;
+          total += originalDept.manual_adjustment; // Update the grand total as well
+        }
+        return d;
+      }).filter(d => d.regCount > 0 || (departments.find(dept => dept.code === d.code)?.manual_adjustment || 0) !== 0);
+
+      setDeptPayments(finalDeptPayments);
       setGrandTotal(total);
     } catch (err) {
       console.error('Stats error:', err);
@@ -146,7 +162,6 @@ export function AdminDashboardPage() {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       setPasswordSuccess('Password updated successfully!');
-      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: any) {

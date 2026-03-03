@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { supabase, Department } from '../../lib/supabase';
-import { Plus, Edit, Trash2, Loader, X, Building2 } from 'lucide-react';
+import { useAuth } from '../../lib/AuthContext';
+import { Plus, Edit, Trash2, Loader, X, IndianRupee } from 'lucide-react';
 
 export function DepartmentManager() {
+  const { profile } = useAuth();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Department | null>(null);
-  const [form, setForm] = useState({ name: '', code: '', description: '', image_url: '', is_active: true });
+  const [form, setForm] = useState({ name: '', code: '', description: '', image_url: '', is_active: true, manual_adjustment: 0 });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,14 +23,21 @@ export function DepartmentManager() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', code: '', description: '', image_url: '', is_active: true });
+    setForm({ name: '', code: '', description: '', image_url: '', is_active: true, manual_adjustment: 0 });
     setShowForm(true);
     setError('');
   };
 
   const openEdit = (dept: Department) => {
     setEditing(dept);
-    setForm({ name: dept.name, code: dept.code, description: dept.description, image_url: dept.image_url, is_active: dept.is_active });
+    setForm({
+      name: dept.name,
+      code: dept.code,
+      description: dept.description,
+      image_url: dept.image_url,
+      is_active: dept.is_active,
+      manual_adjustment: dept.manual_adjustment || 0
+    });
     setShowForm(true);
     setError('');
   };
@@ -45,12 +54,14 @@ export function DepartmentManager() {
         const { error } = await supabase.from('departments').update({
           name: form.name, code: form.code.toUpperCase(), description: form.description,
           image_url: form.image_url, is_active: form.is_active,
+          manual_adjustment: form.manual_adjustment,
         }).eq('id', editing.id);
         if (error) throw error;
       } else {
         const { error } = await supabase.from('departments').insert({
           name: form.name, code: form.code.toUpperCase(), description: form.description,
           image_url: form.image_url, is_active: form.is_active,
+          manual_adjustment: form.manual_adjustment,
         });
         if (error) throw error;
       }
@@ -86,6 +97,7 @@ export function DepartmentManager() {
             <tr>
               <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase text-xs">Code</th>
               <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase text-xs">Name</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase text-xs">Adjustment</th>
               <th className="px-4 py-3 text-left font-medium text-gray-500 uppercase text-xs">Status</th>
               <th className="px-4 py-3 text-right font-medium text-gray-500 uppercase text-xs">Actions</th>
             </tr>
@@ -95,6 +107,13 @@ export function DepartmentManager() {
               <tr key={dept.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-mono font-bold text-indigo-600">{dept.code}</td>
                 <td className="px-4 py-3 font-medium text-gray-900">{dept.name}</td>
+                <td className="px-4 py-3 text-gray-600 font-medium">
+                  {dept.manual_adjustment ? (
+                    <span className={dept.manual_adjustment > 0 ? 'text-green-600' : 'text-red-600'}>
+                      {dept.manual_adjustment > 0 ? '+' : ''}₹{dept.manual_adjustment}
+                    </span>
+                  ) : '—'}
+                </td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${dept.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                     {dept.is_active ? 'Active' : 'Inactive'}
@@ -139,6 +158,22 @@ export function DepartmentManager() {
                 <input type="checkbox" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} className="rounded" />
                 <span className="text-sm text-gray-700">Active</span>
               </label>
+
+              {profile?.role === 'master_admin' && (
+                <div className="pt-4 border-t border-gray-100">
+                  <label className="block text-xs font-bold text-indigo-600 uppercase mb-2 flex items-center">
+                    <IndianRupee size={12} className="mr-1" /> Manual Revenue Adjustment (Master Admin Only)
+                  </label>
+                  <p className="text-[10px] text-gray-500 mb-2">This manually adds or subtracts from the department's total revenue. Use negative values to subtract.</p>
+                  <input
+                    type="number"
+                    value={form.manual_adjustment}
+                    onChange={e => setForm({ ...form, manual_adjustment: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 border border-indigo-200 rounded-lg text-sm bg-indigo-50 focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g. 5000 or -2000"
+                  />
+                </div>
+              )}
               {error && <p className="text-sm text-red-600">{error}</p>}
               <div className="flex justify-end gap-3">
                 <button onClick={() => setShowForm(false)} className="btn-secondary text-sm">Cancel</button>
