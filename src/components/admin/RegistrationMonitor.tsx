@@ -155,17 +155,41 @@ export function RegistrationMonitor() {
   };
 
   const buildCSVContent = (regs: Registration[]) => {
-    const header = ['Registration ID', 'Name', 'Email', 'Phone', 'College ID', 'Type', 'Team Name', 'Event', 'Department', 'Fee/Person (₹)', 'Members', 'Gross Amount (₹)', 'IST Discount (₹)', 'Net Amount (₹)', 'Payer Name / Ref', 'Status', 'IP Address', 'User Agent', 'Platform', 'Registered At', 'Reviewed At'];
+    const header = [
+      'Registration ID', 'Name', 'Email', 'Phone', 'College ID', 'Type', 'Team Name',
+      'Event', 'Department', 'Fee/Person (₹)', 'Member Count', 'Member Names',
+      'Gross Amount (₹)', 'IST Discount (₹)', 'Net Amount (₹)', 'Payer Name / Ref',
+      'Status', 'IP Address', 'User Agent', 'Platform', 'Registered At', 'Reviewed At'
+    ];
+
     const rows = regs.map(r => {
       const evt = events.find(e => e.id === r.event_id);
       const dept = evt?.department_id ? departments.find(d => d.id === evt.department_id) : null;
       const regMembers = members[r.id] || [];
-      const memberCount = regMembers.length > 0
-        ? regMembers.length
-        : (r.registration_type === 'group' ? (r.team_members?.length || 0) + 1 : getMemberCountForType(r.registration_type));
+
+      // Determine member count and names
+      let memberCount = 0;
+      let memberNames = '';
+
+      if (regMembers.length > 0) {
+        memberCount = regMembers.length;
+        memberNames = regMembers.map(m => m.member_name).join('; ');
+      } else {
+        // Fallback for older registrations or where members table isn't used
+        const baseCount = r.registration_type === 'group' ? (r.team_members?.length || 0) + 1 : getMemberCountForType(r.registration_type);
+        memberCount = baseCount;
+
+        const names = [r.name];
+        if (r.team_members && r.team_members.length > 0) {
+          names.push(...r.team_members);
+        }
+        memberNames = names.join('; ');
+      }
+
       const grossFee = (evt?.registration_fee ?? 0) * memberCount;
       const istDiscount = getISTDiscountForReg(r);
       const netFee = Math.max(0, grossFee - istDiscount);
+
       return [
         r.registration_id,
         `"${r.name}"`,
@@ -178,6 +202,7 @@ export function RegistrationMonitor() {
         `"${dept?.name || 'General'}"`,
         evt?.registration_fee ?? 0,
         memberCount,
+        `"${memberNames}"`,
         grossFee,
         istDiscount,
         netFee,
