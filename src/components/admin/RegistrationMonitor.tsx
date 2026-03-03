@@ -49,7 +49,7 @@ export function RegistrationMonitor() {
     setRegistrations(regs);
     setEvents(evtsRes.data || []);
     setDepartments(deptRes.data || []);
-    setIstEnrollments(new Set((istRes.data || []).map((d: any) => d.enrollment_number.toUpperCase())));
+    setIstEnrollments(new Set((istRes.data || []).map((d: any) => (d.enrollment_number as string).trim().toUpperCase())));
 
     // Group members by registration ID
     const membersByReg: Record<string, any[]> = {};
@@ -138,11 +138,13 @@ export function RegistrationMonitor() {
     if (regMembers && regMembers.length > 0) {
       // If members are loaded, check everyone in the members table
       regMembers.forEach((m: any) => {
-        if (m.college_id && istEnrollments.has(m.college_id.trim().toUpperCase())) istCount++;
+        const collegeId = m.college_id?.trim().toUpperCase();
+        if (collegeId && istEnrollments.has(collegeId)) istCount++;
       });
     } else {
       // Fallback: check primary registrant if members not loaded/missing
-      if (r.college_id && istEnrollments.has(r.college_id.trim().toUpperCase())) istCount++;
+      const primaryCollegeId = r.college_id?.trim().toUpperCase();
+      if (primaryCollegeId && istEnrollments.has(primaryCollegeId)) istCount++;
     }
 
     return istCount * IST_DISCOUNT_PER_MEMBER;
@@ -157,9 +159,10 @@ export function RegistrationMonitor() {
     const rows = regs.map(r => {
       const evt = events.find(e => e.id === r.event_id);
       const dept = evt?.department_id ? departments.find(d => d.id === evt.department_id) : null;
-      const memberCount = r.registration_type === 'group'
-        ? (r.team_members?.length || 0) + 1
-        : getMemberCountForType(r.registration_type);
+      const regMembers = members[r.id] || [];
+      const memberCount = regMembers.length > 0
+        ? regMembers.length
+        : (r.registration_type === 'group' ? (r.team_members?.length || 0) + 1 : getMemberCountForType(r.registration_type));
       const grossFee = (evt?.registration_fee ?? 0) * memberCount;
       const istDiscount = getISTDiscountForReg(r);
       const netFee = Math.max(0, grossFee - istDiscount);

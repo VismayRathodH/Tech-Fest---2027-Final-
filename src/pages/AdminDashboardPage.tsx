@@ -43,7 +43,7 @@ export function AdminDashboardPage() {
       const regs: Registration[] = regRes.data || [];
       const events: Event[] = evtRes.data || [];
       const departments: Department[] = deptsDataRes.data || [];
-      const istSet = new Set((istRes.data || []).map((d: any) => (d.enrollment_number as string).toUpperCase()));
+      const istSet = new Set((istRes.data || []).map((d: any) => (d.enrollment_number as string).trim().toUpperCase()));
       const allMembers: any[] = membersRes.data || [];
 
       // Group members by registration ID for efficient lookup
@@ -101,11 +101,13 @@ export function AdminDashboardPage() {
         if (regMembers.length > 0) {
           // Check all members from registration_members table
           regMembers.forEach(m => {
-            if (m.college_id && istSet.has(m.college_id.trim().toUpperCase())) istCount++;
+            const collegeId = m.college_id?.trim().toUpperCase();
+            if (collegeId && istSet.has(collegeId)) istCount++;
           });
         } else {
           // Fallback if members table not populated for this reg (check primary only)
-          if (r.college_id && istSet.has(r.college_id.trim().toUpperCase())) istCount++;
+          const primaryCollegeId = r.college_id?.trim().toUpperCase();
+          if (primaryCollegeId && istSet.has(primaryCollegeId)) istCount++;
         }
 
         const discount = istCount * IST_DISCOUNT;

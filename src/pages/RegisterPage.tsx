@@ -186,7 +186,10 @@ export function RegisterPage() {
 
   const getISTMemberCount = (): number => {
     if (!istChecked) return 0;
-    return participants.filter(p => istMembers.has(p.college_id.trim().toUpperCase())).length;
+    return participants.filter(p => {
+      const collegeId = p.college_id?.trim().toUpperCase();
+      return collegeId && istMembers.has(collegeId);
+    }).length;
   };
 
   const getISTDiscount = (): number => {
@@ -200,16 +203,26 @@ export function RegisterPage() {
   };
 
   const checkISTMembership = async () => {
-    const collegeIds = participants.map(p => p.college_id.trim().toUpperCase()).filter(Boolean);
-    if (collegeIds.length === 0) { setIstChecked(true); return; }
+    const collegeIds = participants
+      .map(p => p.college_id?.trim().toUpperCase())
+      .filter((id): id is string => !!id);
+
+    if (collegeIds.length === 0) {
+      setIstMembers(new Set());
+      setIstChecked(true);
+      return;
+    }
+
     try {
       const { data } = await supabase
         .from('ist_members')
         .select('enrollment_number')
         .in('enrollment_number', collegeIds);
-      const set = new Set((data || []).map(d => d.enrollment_number.toUpperCase()));
+
+      const set = new Set((data || []).map(d => d.enrollment_number.trim().toUpperCase()));
       setIstMembers(set);
-    } catch {
+    } catch (error) {
+      console.error('Error checking IST membership:', error);
       setIstMembers(new Set());
     }
     setIstChecked(true);
