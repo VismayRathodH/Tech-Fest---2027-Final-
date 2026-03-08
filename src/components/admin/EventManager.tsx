@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, Event, Department } from '../../lib/supabase';
-import { Plus, Edit, Trash2, X, Loader, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Loader, Calendar, IndianRupee } from 'lucide-react';
 
 export function EventManager() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -158,40 +158,42 @@ export function EventManager() {
         </table>
       </div>
 
-      {/* Form Modal — Full-screen slide-up panel */}
+      {/* Form Modal — Truly Full-screen view */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center" onClick={() => setShowForm(false)}>
-          <div
-            className="bg-white w-full sm:max-w-4xl sm:mx-4 sm:rounded-2xl rounded-t-2xl max-h-[95vh] flex flex-col animate-fadeIn"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Sticky header */}
-            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0">
-              <h3 className="text-lg font-bold text-gray-900">{editing ? 'Edit Event' : 'Create Event'}</h3>
-              <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"><X size={20} /></button>
-            </div>
+        <div className="fixed inset-0 bg-white z-[9999] flex flex-col animate-fadeIn" style={{ height: '100vh' }} onClick={e => e.stopPropagation()}>
+          {/* Sticky header */}
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm flex-shrink-0">
+            <h3 className="text-2xl font-bold text-gray-900">{editing ? 'Edit Event' : 'Create New Event'}</h3>
+            <button
+              onClick={() => setShowForm(false)}
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
 
-            {/* Scrollable body */}
-            <div className="flex-1 overflow-y-auto px-6 py-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <label className="form-label">Title *</label>
-                  <input type="text" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="input-field" placeholder="Event title" />
+          {/* Scrollable body */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-6xl mx-auto px-6 py-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="md:col-span-2 lg:col-span-3">
+                  <label className="form-label text-base">Event Title *</label>
+                  <input type="text" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="input-field text-lg py-4" placeholder="Enter a catchy title for your event" />
                 </div>
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <label className="form-label">Description</label>
-                  <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="input-field" rows={2} placeholder="Brief description..." />
+                <div className="md:col-span-2 lg:col-span-3">
+                  <label className="form-label text-base">Description</label>
+                  <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="input-field" rows={4} placeholder="What is this event about? (Supports markdown)" />
                 </div>
                 <div>
                   <label className="form-label">Department</label>
                   <select value={form.department_id} onChange={e => setForm({ ...form, department_id: e.target.value })} className="input-field">
-                    <option value="">No Department</option>
+                    <option value="">No Department (General)</option>
                     {departments.map(d => <option key={d.id} value={d.id}>{d.name} ({d.code})</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="form-label">Category *</label>
-                  <input type="text" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="input-field" placeholder="Workshop, Hackathon..." />
+                  <input type="text" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="input-field" placeholder="Workshop, Hackathon, etc." />
                 </div>
                 <div>
                   <label className="form-label">Status</label>
@@ -212,7 +214,7 @@ export function EventManager() {
                 </div>
                 <div>
                   <label className="form-label">Location *</label>
-                  <input type="text" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="input-field" placeholder="Venue" />
+                  <input type="text" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="input-field" placeholder="Physical venue or Online link" />
                 </div>
                 <div>
                   <label className="form-label">Max Attendees</label>
@@ -220,15 +222,18 @@ export function EventManager() {
                 </div>
                 <div>
                   <label className="form-label">Registration Fee (₹)</label>
-                  <input type="number" value={form.registration_fee} onChange={e => setForm({ ...form, registration_fee: e.target.value })} className="input-field" />
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">₹</span>
+                    <input type="number" value={form.registration_fee} onChange={e => setForm({ ...form, registration_fee: e.target.value })} className="input-field pl-8" />
+                  </div>
                 </div>
                 <div>
                   <label className="form-label">Image URL</label>
-                  <input type="url" value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} className="input-field" placeholder="https://..." />
+                  <input type="url" value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} className="input-field" placeholder="https://example.com/image.jpg" />
                 </div>
                 <div>
                   <label className="form-label">Min Group Size</label>
-                  <input type="number" value={form.min_team_size} onChange={e => setForm({ ...form, min_team_size: e.target.value })} className="input-field" min={2} placeholder="2" />
+                  <input type="number" value={form.min_team_size} onChange={e => setForm({ ...form, min_team_size: e.target.value })} className="input-field" min={2} />
                 </div>
                 <div>
                   <label className="form-label">Max Group Size</label>
@@ -237,9 +242,9 @@ export function EventManager() {
               </div>
 
               {/* Participation types */}
-              <div className="mt-5">
-                <label className="form-label mb-2">Allowed Participation Types</label>
-                <div className="flex flex-wrap gap-3">
+              <div className="mt-8">
+                <label className="form-label text-gray-900 font-bold mb-4">Allowed Participation Types</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                   {[
                     { key: 'allow_single', label: 'Solo' },
                     { key: 'allow_double', label: 'Duo' },
@@ -247,44 +252,75 @@ export function EventManager() {
                     { key: 'allow_quad', label: 'Quad' },
                     { key: 'allow_group', label: 'Group' },
                   ].map(({ key, label }) => (
-                    <label key={key} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${(form as any)[key] ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                    <label key={key} className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${(form as any)[key] ? 'bg-indigo-50 border-indigo-600 text-indigo-700 shadow-md translate-y-[-2px]' : 'bg-white border-gray-100 text-gray-500 hover:border-gray-300'
                       }`}>
-                      <input type="checkbox" checked={(form as any)[key]} onChange={e => setForm({ ...form, [key]: e.target.checked })} className="rounded text-indigo-600" />
-                      <span className="text-sm font-medium">{label}</span>
+                      <input type="checkbox" checked={(form as any)[key]} onChange={e => setForm({ ...form, [key]: e.target.checked })} className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                      <span className="text-sm font-bold">{label}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
               {/* Payment settings */}
-              <div className="mt-5 border-t border-gray-200 pt-5">
-                <h4 className="text-sm font-bold text-gray-700 mb-3">Payment Settings</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="mt-10 pt-10 border-t border-gray-100">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                    <IndianRupee size={18} className="text-green-600" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900">Payment Settings</h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="form-label">QR Code Image URL</label>
-                    <input type="url" value={form.qr_code_url} onChange={e => setForm({ ...form, qr_code_url: e.target.value })} className="input-field" placeholder="https://..." />
+                    <input type="url" value={form.qr_code_url} onChange={e => setForm({ ...form, qr_code_url: e.target.value })} className="input-field" placeholder="Upload to Imgur/Cloudinary and paste link" />
                   </div>
                   <div>
                     <label className="form-label">UPI ID</label>
-                    <input type="text" value={form.upi_id} onChange={e => setForm({ ...form, upi_id: e.target.value })} className="input-field" placeholder="example@upi" />
+                    <input type="text" value={form.upi_id} onChange={e => setForm({ ...form, upi_id: e.target.value })} className="input-field" placeholder="upi-id@bank" />
                   </div>
-                  <div className="sm:col-span-2 lg:col-span-1">
+                  <div className="md:col-span-2">
                     <label className="form-label">Payment Instructions</label>
-                    <textarea value={form.payment_instructions} onChange={e => setForm({ ...form, payment_instructions: e.target.value })} className="input-field" rows={2} placeholder="Instructions..." />
+                    <textarea value={form.payment_instructions} onChange={e => setForm({ ...form, payment_instructions: e.target.value })} className="input-field" rows={3} placeholder="Steps for the user to follow after scanning the QR code..." />
                   </div>
                 </div>
               </div>
 
-              {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
+              {error && (
+                <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 animate-fadeIn">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <X size={16} /> {error}
+                  </p>
+                </div>
+              )}
             </div>
+          </div>
 
-            {/* Sticky footer */}
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 flex-shrink-0 bg-gray-50 sm:rounded-b-2xl">
-              <button onClick={() => setShowForm(false)} className="btn-secondary text-sm">Cancel</button>
-              <button onClick={handleSave} disabled={saving} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors">
-                {saving ? 'Saving...' : 'Save Event'}
-              </button>
-            </div>
+          {/* Sticky footer */}
+          <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-end gap-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <button
+              onClick={() => setShowForm(false)}
+              className="btn-secondary min-w-[120px]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="btn-primary min-w-[200px] flex items-center justify-center gap-2"
+            >
+              {saving ? (
+                <>
+                  <Loader className="animate-spin" size={20} />
+                  <span>Saving Changes...</span>
+                </>
+              ) : (
+                <>
+                  <Calendar size={20} />
+                  <span>{editing ? 'Update Event' : 'Create Event'}</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
       )}
